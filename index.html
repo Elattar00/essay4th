@@ -1,0 +1,1472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Essay Writing | Study Guide</title>
+    
+    <!-- Google Fonts for premium typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Kufi+Arabic:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        arabic: ['Noto Kufi Arabic', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Babel for JSX compilation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Import Map -->
+    <script type="importmap">
+    {
+        "imports": {
+            "react": "https://esm.sh/react@18.2.0",
+            "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+            "lucide-react": "https://esm.sh/lucide-react@0.263.1"
+        }
+    }
+    </script>
+
+    <style>
+        /* Custom scrollbar styling */
+        ::-webkit-scrollbar { width: 8px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+        }
+        
+        .hero-pattern {
+            background-color: #f8fafc;
+            background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+
+        .fade-enter { opacity: 0; transform: translateY(10px); }
+        .fade-enter-active { opacity: 1; transform: translateY(0); transition: opacity 400ms, transform 400ms; }
+        
+        /* Subtle scroll hint for mobile nav */
+        .scroll-hint-mask {
+            -webkit-mask-image: linear-gradient(to right, black 90%, transparent 100%);
+            mask-image: linear-gradient(to right, black 90%, transparent 100%);
+        }
+    </style>
+</head>
+<body class="bg-[#f8fafc]">
+    <div id="root"></div>
+
+    <script type="text/babel" data-type="module">
+        import { createRoot } from 'react-dom/client';
+        import React, { useState, useEffect, useRef } from 'react';
+        import { 
+            BookOpen, Users, BrainCircuit, Feather, ShieldAlert, Sparkles,
+            Quote, Zap, Briefcase, ScrollText, HeartHandshake, Home, HelpCircle, 
+            CheckCircle, XCircle, Network, PenTool, LayoutTemplate, SplitSquareHorizontal, Layers,
+            FileText, Image, MessageSquare, ListChecks
+        } from 'lucide-react';
+
+        // Soft, highly readable Arabic Dropdown Component
+        const Ar = ({ title, children }) => {
+            const [isOpen, setIsOpen] = useState(false);
+            return (
+                <div dir="rtl" className="mt-4 border border-slate-200 rounded-xl overflow-hidden text-right transition-all shadow-sm">
+                    <button 
+                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); setIsOpen(!isOpen); }}
+                        className="w-full flex items-center justify-between p-3.5 bg-emerald-50/50 hover:bg-emerald-50 transition-colors"
+                    >
+                        <div className="flex items-center gap-3">
+                            <span className="inline-block bg-emerald-100 text-emerald-800 text-[10px] font-black px-2.5 py-1 rounded border border-emerald-200 uppercase tracking-wide">شرح تفصيلي مبسط</span>
+                            {title && <span className="text-[13px] font-bold text-emerald-950 font-arabic">{title}</span>}
+                        </div>
+                        <svg className={`w-4 h-4 text-emerald-600 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+                    <div className={`transition-all duration-300 ease-in-out overflow-hidden ${isOpen ? 'max-h-[2500px] opacity-100' : 'max-h-0 opacity-0'}`}>
+                        <div className="p-5 bg-white border-t border-emerald-100 text-slate-700 text-[14px] leading-[1.8] font-normal font-arabic">
+                            {children}
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const Section = ({ title, subtitle, icon: Icon, children, color = "rose" }) => {
+            const styles = {
+                emerald: { header: "from-emerald-700 to-teal-900", text: "text-emerald-50", icon: "text-emerald-200" },
+                rose: { header: "from-rose-700 to-red-900", text: "text-rose-50", icon: "text-rose-200" },
+                amber: { header: "from-amber-600 to-orange-800", text: "text-amber-50", icon: "text-amber-200" },
+                indigo: { header: "from-indigo-700 to-violet-900", text: "text-indigo-50", icon: "text-indigo-200" },
+                purple: { header: "from-purple-700 to-indigo-900", text: "text-purple-50", icon: "text-purple-200" },
+                blue: { header: "from-blue-700 to-slate-900", text: "text-blue-50", icon: "text-blue-200" },
+                teal: { header: "from-teal-700 to-cyan-900", text: "text-teal-50", icon: "text-teal-200" }
+            };
+            const s = styles[color] || styles.rose;
+
+            return (
+                <div className="bg-white rounded-[2rem] shadow-md shadow-slate-200/50 overflow-visible mb-10 border border-slate-200 relative group">
+                    <div className={`p-8 bg-gradient-to-br ${s.header} rounded-t-[2rem] relative overflow-hidden`}>
+                        <div className={`absolute -right-10 -top-10 ${s.icon} opacity-10 rotate-12 transition-transform duration-700 group-hover:rotate-6 group-hover:scale-110`}>
+                            <Icon size={180} />
+                        </div>
+                        <div className="relative z-10 flex items-start gap-5">
+                            <div className="p-3.5 bg-white/20 backdrop-blur-md rounded-2xl text-white shadow-inner shrink-0">
+                                <Icon size={32} />
+                            </div>
+                            <div>
+                                <h2 className="text-2xl font-black tracking-tight text-white mb-1">{title}</h2>
+                                {subtitle && <p className={`font-medium ${s.text} opacity-90 text-sm`}>{subtitle}</p>}
+                            </div>
+                        </div>
+                    </div>
+                    <div className="p-6 md:p-8 space-y-6 text-slate-700 leading-relaxed text-[16px]">
+                        {children}
+                    </div>
+                </div>
+            );
+        };
+
+        const ExerciseCard = ({ question, answer, themeColor = "rose" }) => {
+            const [isOpen, setIsOpen] = useState(false);
+            const activeColors = {
+                rose: "hover:border-rose-300",
+                indigo: "hover:border-indigo-300",
+                purple: "hover:border-purple-300",
+                blue: "hover:border-blue-300",
+                emerald: "hover:border-emerald-300",
+                amber: "hover:border-amber-300",
+                teal: "hover:border-teal-300"
+            };
+
+            const headerColors = {
+                rose: "text-rose-800",
+                indigo: "text-indigo-800",
+                purple: "text-purple-800",
+                blue: "text-blue-800",
+                emerald: "text-emerald-800",
+                amber: "text-amber-800",
+                teal: "text-teal-800"
+            };
+
+            return (
+                <div className={`bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm transition-all duration-300 ${isOpen ? 'ring-1 ring-slate-300 shadow-md' : activeColors[themeColor]}`}>
+                    <button 
+                        onClick={() => setIsOpen(!isOpen)}
+                        className="w-full p-5 text-left flex items-start justify-between gap-4 transition-colors hover:bg-slate-50"
+                    >
+                        <div>
+                            <span className={`text-[10px] font-black uppercase tracking-wider mb-2 block ${headerColors[themeColor]}`}>Original Text / Exercise</span>
+                            <span className="leading-snug text-slate-800 font-medium text-sm">{question}</span>
+                        </div>
+                        <div className="w-8 h-8 rounded-full flex items-center justify-center border border-slate-200 bg-white shrink-0 mt-0.5">
+                            <svg className={`w-4 h-4 text-slate-500 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </div>
+                    </button>
+                    {isOpen && (
+                        <div className="p-5 border-t border-slate-150 bg-slate-50/80">
+                            <span className={`text-[10px] font-black uppercase tracking-wider mb-2 block ${headerColors[themeColor]}`}>Revised / Answer</span>
+                            <div className="text-sm leading-relaxed text-slate-700 font-semibold">
+                                {answer}
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        const EssayCard = ({ question, answer, arabicKey, themeColor = "rose" }) => {
+            const [isOpen, setIsOpen] = useState(false);
+            
+            return (
+                <div className={`bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-sm transition-all duration-300 ${isOpen ? 'ring-1 ring-slate-300 shadow-md' : 'hover:border-slate-300'}`}>
+                    <button 
+                        onClick={() => setIsOpen(!isOpen)}
+                        className="w-full p-5 text-left flex items-start justify-between gap-4 font-bold text-[15px] text-slate-850 hover:bg-slate-50 transition-colors"
+                    >
+                        <span className="leading-snug text-slate-800">{question}</span>
+                        <div className="w-8 h-8 rounded-full flex items-center justify-center border border-slate-200 bg-white shrink-0 mt-0.5">
+                            <svg className={`w-4 h-4 text-slate-500 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </div>
+                    </button>
+                    {isOpen && (
+                        <div className="p-6 border-t border-slate-150 bg-white space-y-4">
+                            <div className="text-sm leading-relaxed text-slate-700 space-y-3">
+                                {answer}
+                            </div>
+                            {arabicKey && (
+                                <Ar title="تبسيط وتلخيص مقالي">
+                                    {arabicKey}
+                                </Ar>
+                            )}
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        const App = () => {
+            const themeColors = {
+                // Dr. Islam
+                dr_islam_structure: { accent: "text-rose-700", bgAccent: "bg-rose-800", navActive: "text-rose-700 border-b-2 border-rose-700" },
+                dr_islam_flow: { accent: "text-blue-700", bgAccent: "bg-blue-800", navActive: "text-blue-700 border-b-2 border-blue-700" },
+                dr_islam_compare: { accent: "text-emerald-700", bgAccent: "bg-emerald-800", navActive: "text-emerald-700 border-b-2 border-emerald-700" },
+                dr_islam_exercises: { accent: "text-purple-700", bgAccent: "bg-purple-800", navActive: "text-purple-700 border-b-2 border-purple-700" },
+                
+                // Dr. Abdullah
+                dr_abdullah_writing: { accent: "text-amber-700", bgAccent: "bg-amber-800", navActive: "text-amber-700 border-b-2 border-amber-700" },
+                dr_abdullah_special: { accent: "text-teal-700", bgAccent: "bg-teal-800", navActive: "text-teal-700 border-b-2 border-teal-700" },
+                dr_abdullah_style: { accent: "text-indigo-700", bgAccent: "bg-indigo-800", navActive: "text-indigo-700 border-b-2 border-indigo-700" },
+                dr_abdullah_modes: { accent: "text-rose-700", bgAccent: "bg-rose-800", navActive: "text-rose-700 border-b-2 border-rose-700" },
+                dr_abdullah_lit: { accent: "text-purple-700", bgAccent: "bg-purple-800", navActive: "text-purple-700 border-b-2 border-purple-700" },
+                dr_abdullah_exercises: { accent: "text-emerald-700", bgAccent: "bg-emerald-800", navActive: "text-emerald-700 border-b-2 border-emerald-700" }
+            };
+
+            const [activeDoctor, setActiveDoctor] = useState('islam');
+            const [activeTab, setActiveTab] = useState('dr_islam_structure');
+            const [isAnimating, setIsAnimating] = useState(false);
+            const navRef = useRef(null);
+
+            const handleDoctorSwitch = (doc) => {
+                if(doc === activeDoctor) return;
+                setIsAnimating(true);
+                setTimeout(() => {
+                    setActiveDoctor(doc);
+                    if (doc === 'islam') {
+                        setActiveTab('dr_islam_structure');
+                    } else {
+                        setActiveTab('dr_abdullah_writing');
+                    }
+                    setIsAnimating(false);
+                }, 150);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            };
+
+            const handleTabSwitch = (tab, e) => {
+                if(tab === activeTab) return;
+                setIsAnimating(true);
+                
+                if(e && e.target) {
+                    e.target.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                }
+
+                setTimeout(() => {
+                    setActiveTab(tab);
+                    setIsAnimating(false);
+                }, 150);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            };
+
+            const islamTabs = [
+                { id: 'dr_islam_structure', label: '1. Sentence Structure & Modifiers', icon: LayoutTemplate, color: 'rose' },
+                { id: 'dr_islam_flow', label: '2. Sentence Flow & Voice', icon: SplitSquareHorizontal, color: 'blue' },
+                { id: 'dr_islam_compare', label: '3. Comparisons & Analogies', icon: Layers, color: 'emerald' },
+                { id: 'dr_islam_exercises', label: '4. Practice Exercises Hub', icon: PenTool, color: 'purple' },
+            ];
+
+            const abdullahTabs = [
+                { id: 'dr_abdullah_writing', label: '1. Paragraphs & Unity', icon: FileText, color: 'amber' },
+                { id: 'dr_abdullah_special', label: '2. Special Paragraphs', icon: SplitSquareHorizontal, color: 'teal' },
+                { id: 'dr_abdullah_style', label: '3. Style & Diction', icon: Quote, color: 'indigo' },
+                { id: 'dr_abdullah_modes', label: '4. Rhetorical Modes', icon: Image, color: 'rose' },
+                { id: 'dr_abdullah_lit', label: '5. Writing About Lit', icon: BookOpen, color: 'purple' },
+                { id: 'dr_abdullah_exercises', label: '6. Exercises Hub', icon: PenTool, color: 'emerald' }
+            ];
+
+            const activeColors = themeColors[activeTab] || themeColors.dr_islam_structure;
+
+            return (
+                <div className="min-h-screen hero-pattern font-sans pb-24 transition-colors duration-300">
+                    
+                    {/* Sticky Modern Header with Refined Mobile Scroll Nav */}
+                    <header className="sticky top-0 z-50 glass-panel shadow-sm border-b border-slate-200">
+                        <div className="max-w-6xl mx-auto px-4 md:px-6 py-4">
+                            <div className="flex flex-col sm:flex-row items-center sm:items-center justify-between gap-4">
+                                
+                                {/* Branding */}
+                                <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-start">
+                                    <div className="flex items-center gap-3">
+                                        <div className="bg-slate-800 text-white w-10 h-10 rounded-2xl flex items-center justify-center shadow-md shrink-0">
+                                            <PenTool size={20} />
+                                        </div>
+                                        <div>
+                                            <h1 className="text-lg font-black text-slate-900 tracking-tight leading-none">Essay Writing</h1>
+                                            <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mt-1">Elattar</p>
+                                        </div>
+                                    </div>
+                                    
+                                    {/* Mobile Only Status Badge */}
+                                    <div className="sm:hidden flex items-center gap-1.5 bg-emerald-50 text-emerald-800 border border-emerald-200 text-[10px] px-2 py-1 rounded-full font-bold">
+                                        <Sparkles size={10} />
+                                        100%
+                                    </div>
+                                </div>
+
+                                {/* Main Portal Selector */}
+                                <div className="flex items-center gap-1.5 p-1 bg-slate-200/60 rounded-2xl">
+                                    <button 
+                                        onClick={() => handleDoctorSwitch('islam')}
+                                        className={`px-4 py-1.5 rounded-xl text-xs font-black uppercase tracking-wide transition-all whitespace-nowrap ${activeDoctor === 'islam' ? 'bg-white text-rose-700 shadow-sm ring-1 ring-black/5' : 'text-slate-500 hover:text-slate-800'}`}
+                                    >
+                                        Dr. Islam (Part 1)
+                                    </button>
+                                    <button 
+                                        onClick={() => handleDoctorSwitch('abdullah')}
+                                        className={`px-4 py-1.5 rounded-xl text-xs font-black uppercase tracking-wide transition-all whitespace-nowrap ${activeDoctor === 'abdullah' ? 'bg-white text-amber-700 shadow-sm ring-1 ring-black/5' : 'text-slate-500 hover:text-slate-800'}`}
+                                    >
+                                        Dr. Abdullah (Part 2)
+                                    </button>
+                                </div>
+
+                                {/* Desktop Status Badge */}
+                                <div className="hidden sm:flex items-center gap-2 bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs px-3 py-1 rounded-full font-bold">
+                                    <Sparkles size={12} />
+                                    100% Autistic
+                                </div>
+                            </div>
+
+                            {/* Responsive Tab Grid */}
+                            <div className="relative mt-4">
+                                <div 
+                                    ref={navRef}
+                                    className="flex overflow-x-auto no-scrollbar scroll-smooth snap-x p-1.5 bg-slate-100/90 rounded-2xl gap-2 relative z-0 shadow-inner items-center scroll-hint-mask"
+                                >
+                                    {(activeDoctor === 'islam' ? islamTabs : abdullahTabs).map((tab) => {
+                                        const TabIcon = tab.icon;
+                                        return (
+                                            <button
+                                                key={tab.id}
+                                                onClick={(e) => handleTabSwitch(tab.id, e)}
+                                                className={`px-3 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-wide transition-all duration-200 whitespace-nowrap flex items-center justify-center lg:justify-start gap-2 shrink-0 snap-start sm:snap-align-none ${
+                                                    activeTab === tab.id 
+                                                    ? `bg-white ${activeColors.accent} shadow-md ring-1 ring-black/5 scale-[1.02]` 
+                                                    : 'text-slate-500 hover:text-slate-800 hover:bg-white/50'
+                                                }`}
+                                            >
+                                                <TabIcon size={13} />
+                                                {tab.label}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+
+                        </div>
+                    </header>
+
+                    {/* Main Content Render */}
+                    <main className={`max-w-4xl mx-auto px-4 md:px-6 py-8 transition-opacity duration-150 ${isAnimating ? 'opacity-0' : 'opacity-100'}`}>
+
+                        {/* =========================================
+                            PORTAL 1: DR. ISLAM (PART 1)
+                            ========================================= */}
+                        {activeDoctor === 'islam' && (
+                            <>
+                                {/* TAB 1: SENTENCE STRUCTURE & MODIFIERS */}
+                                {activeTab === 'dr_islam_structure' && (
+                                    <div className="space-y-8 animate-in fade-in duration-300">
+                                        
+                                        <div className="bg-white rounded-3xl shadow-sm border border-slate-200 p-6 flex flex-col md:flex-row gap-6 items-center hover:border-rose-200 transition-colors">
+                                            <div className="md:w-1/4 flex justify-center">
+                                                <div className="w-20 h-20 bg-rose-50 rounded-full flex items-center justify-center border-4 border-white shadow-md text-rose-600">
+                                                    <LayoutTemplate size={32} />
+                                                </div>
+                                            </div>
+                                            <div className="md:w-3/4 text-center md:text-left space-y-1">
+                                                <h2 className="text-xl font-black text-slate-900">1. Sentence Structure & Modifiers</h2>
+                                                <p className="text-slate-600 text-sm leading-relaxed">
+                                                    Mastering sentence complexity, avoiding repetitive prose, placing modifiers correctly, and using intentional fragments.
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <Section title="Varying Sentence Complexity & Length" subtitle="Eliminating repetitive prose" icon={Feather} color="rose">
+                                            <div className="space-y-4 text-sm leading-relaxed text-slate-700">
+                                                <p>Using sentences of the exact same length creates a bumpy, repetitive, and tedious reading experience. You should vary length and complexity to emphasize key points and show logical relationships.</p>
+                                                
+                                                <h4 className="font-bold text-slate-900 mt-4 mb-2">Three Ways to Combine Sentences:</h4>
+                                                <ul className="list-disc pl-5 space-y-3">
+                                                    <li><strong>Coordination:</strong> Links equal clauses or phrases using conjunctions like <em>and, but, or, nor, for, yet, so</em>. <br/><span className="text-slate-500 italic">Example: A tornado ripped through our town, <strong>but</strong> fortunately it spared our house.</span></li>
+                                                    <li><strong>Subordination:</strong> Links a dependent clause to a main clause using conjunctions like <em>because, since, while, before, during, after</em>. <br/><span className="text-slate-500 italic">Example: Arthur collapsed on the sofa <strong>after</strong> the dance was over.</span></li>
+                                                    <li><strong>Relative Clauses:</strong> Uses a relative pronoun (<em>who, that</em>) to substitute for a noun and bind ideas together. <br/><span className="text-slate-500 italic">Example: Students <strong>who</strong> work hard usually succeed.</span></li>
+                                                </ul>
+                                            </div>
+                                            <Ar title="تنويع طول وتعقيد الجمل">
+                                                كتابة جمل بنفس الطول يجعل القراءة مملة ومتقطعة. يمكنك دمج الجمل لتوضيح الروابط المنطقية بين الأفكار بثلاث طرق:
+                                                <ul className="list-disc pr-5 mt-2 space-y-1">
+                                                    <li><strong>الربط التنسيقي (Coordination):</strong> ربط جملتين متساويتين بأدوات مثل (and, but, so).</li>
+                                                    <li><strong>الربط التبعي (Subordination):</strong> ربط جملة فرعية بجملة أساسية بأدوات تفيد السبب أو الزمن مثل (because, after).</li>
+                                                    <li><strong>عبارات الوصل (Relative Clauses):</strong> استخدام الضمائر الموصولة (who, that) لربط الجمل وتفادي تكرار الفاعل.</li>
+                                                </ul>
+                                            </Ar>
+                                        </Section>
+
+                                        <Section title="Positioning Movable Modifiers" subtitle="Loose, Periodic, and Interrupted Sentences" icon={LayoutTemplate} color="rose">
+                                            <div className="space-y-4 text-sm leading-relaxed text-slate-700">
+                                                <p>Modifiers can be placed in three different positions around the main statement to create different artistic effects and pacing.</p>
+                                                
+                                                <div className="space-y-4">
+                                                    <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                                                        <h4 className="font-bold text-slate-900 mb-1">1. Loose Sentences (Modifiers AFTER the main statement)</h4>
+                                                        <p className="mb-2">The most common arrangement. The main statement comes first, followed by adding further thoughts or descriptive details.</p>
+                                                        <p className="font-serif italic text-rose-700 text-xs">"He burst suddenly into the party, <strong>loud, angry, obscene.</strong>"</p>
+                                                    </div>
+
+                                                    <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                                                        <h4 className="font-bold text-slate-900 mb-1">2. Periodic Sentences (Modifiers BEFORE the main statement)</h4>
+                                                        <p className="mb-2">Delays the main point until the very end. This adds formal cadence, slows the pace, and forces the reader to pay attention to the final punchline.</p>
+                                                        <p className="font-serif italic text-rose-700 text-xs">"<strong>If you can keep your head when everyone around you is panicking,</strong> you probably don't understand the situation."</p>
+                                                    </div>
+
+                                                    <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                                                        <h4 className="font-bold text-slate-900 mb-1">3. Interrupted Sentences (Modifiers WITHIN the main statement)</h4>
+                                                        <p className="mb-2">Stretches the main idea by inserting material between the subject and the verb. This slows the forward pace of the sentence.</p>
+                                                        <p className="font-serif italic text-rose-700 text-xs">"The young girl, <strong>wearing a tattered dress,</strong> gave the beggar a ten-dollar bill."</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <Ar title="مواقع الكلمات والعبارات الوصفية (Modifiers)">
+                                                تتغير أنماط الجمل حسب موقع العبارات الوصفية:
+                                                <ul className="list-disc pr-5 mt-2 space-y-1">
+                                                    <li><strong>الجملة المفتوحة (Loose Sentence):</strong> نذكر الفكرة الأساسية في البداية ثم نلحق بها الأوصاف والتفاصيل في النهاية (تشبه طريقة الكلام الطبيعي).</li>
+                                                    <li><strong>الجملة الدورية أو المؤجلة (Periodic Sentence):</strong> نبدأ بالشروط والأوصاف ونؤجل الفكرة الأساسية لآخر الجملة لإضفاء طابع رسمي أو مفاجئ.</li>
+                                                    <li><strong>الجملة المعترضة (Interrupted Sentence):</strong> حشر الأوصاف في منتصف الجملة (غالباً بين الفاعل والفعل) لإبطاء سرعة القراءة.</li>
+                                                </ul>
+                                            </Ar>
+                                        </Section>
+
+                                        <Section title="Intentional Fragments" subtitle="Breaking the rules for impact" icon={Zap} color="rose">
+                                            <div className="space-y-4 text-sm leading-relaxed text-slate-700">
+                                                <p>A <strong>fragment</strong> is a part of a sentence that is capitalized and punctuated as if it were a complete sentence (lacking an independent subject or verb).</p>
+                                                <p>While usually considered an error in formal prose, writers use intentional fragments for special effects: to mirror natural dialogue or to focus the reader heavily on the <strong>urgency</strong> of a situation.</p>
+                                                <div className="bg-rose-50 p-3 rounded-lg border border-rose-100 text-xs font-serif italic text-slate-800">
+                                                    "Failed banks. Panicked markets. Rising unemployment. For students of history, it has a familiar ring."
+                                                </div>
+                                                <p className="text-xs text-slate-500 font-medium">Rule of thumb: Think about your intended effect before using a fragment, otherwise it will just look like an accidental grammar error.</p>
+                                            </div>
+                                            <Ar title="استخدام الجمل الناقصة عمداً (Intentional Fragments)">
+                                                الجملة الناقصة هي التي تفتقد للفاعل أو الفعل ولكن يتم وضع نقطة في آخرها كأنها جملة تامة. في الكتابة الأكاديمية تُعتبر خطأ، لكن الكُتّاب المحترفين يستخدمونها عمداً لإضفاء "طابع السرعة والطوارئ" (مثل: أسواق مذعورة. بطالة متزايدة.) أو لمحاكاة الحوارات السريعة.
+                                            </Ar>
+                                        </Section>
+
+                                    </div>
+                                )}
+
+                                {/* TAB 2: SENTENCE FLOW & VOICE */}
+                                {activeTab === 'dr_islam_flow' && (
+                                    <div className="space-y-8 animate-in fade-in duration-300">
+                                        
+                                        <div className="bg-white rounded-3xl shadow-sm border border-slate-200 p-6 flex flex-col md:flex-row gap-6 items-center hover:border-blue-200 transition-colors">
+                                            <div className="md:w-1/4 flex justify-center">
+                                                <div className="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center border-4 border-white shadow-md text-blue-600">
+                                                    <SplitSquareHorizontal size={32} />
+                                                </div>
+                                            </div>
+                                            <div className="md:w-3/4 text-center md:text-left space-y-1">
+                                                <h2 className="text-xl font-black text-slate-900">2. Sentence Flow & Voice</h2>
+                                                <p className="text-slate-600 text-sm leading-relaxed">
+                                                    Enhancing prose with parallel structures, manipulating word order, choosing active over passive voice, and eliminating wordiness.
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <Section title="Word Order in Independent Clauses" subtitle="Normal, Inverted, and Expletive Orders" icon={Network} color="blue">
+                                            <div className="space-y-4 text-sm leading-relaxed text-slate-700">
+                                                <p>Most independent clauses follow a standard arrangement, but writers alter this order to emphasize different elements or create artistic effects.</p>
+                                                <ul className="list-disc pl-5 space-y-3">
+                                                    <li><strong>Normal Order:</strong> (Subject -> Verb). Places emphasis clearly on the subject where readers expect it. <br/><span className="text-slate-500 italic">Example: Barney blushed.</span></li>
+                                                    <li><strong>Inverted Order:</strong> Moves the element you want to emphasize to the absolute front of the sentence. Question sentences also typically use inverted patterns. <br/><span className="text-slate-500 italic">Example: "Tall grow the pines in the mountains." (Subject Complement -> Verb -> Subject)</span></li>
+                                                    <li><strong>Expletive Construction:</strong> Uses 'fillers' like <strong>there</strong> or <strong>it</strong> at the start of a sentence. It alters normal order by anticipating the real subject. Often wordy and clumsy, but useful when a subject desperately needs highlighting or delaying.<br/><span className="text-slate-500 italic">Example: "<strong>There is</strong> a fly in my soup."</span></li>
+                                                </ul>
+                                            </div>
+                                            <Ar title="ترتيب الكلمات في الجملة المستقلة">
+                                                <ul className="list-disc pr-5 mt-2 space-y-1">
+                                                    <li><strong>الترتيب الطبيعي (Normal Order):</strong> فاعل ثم فعل (أسهل للقراءة).</li>
+                                                    <li><strong>الترتيب المعكوس (Inverted Order):</strong> تقديم الجزء المراد تسليط الضوء عليه في بداية الجملة لأغراض فنية، كما يستخدم دائماً في صياغة الأسئلة.</li>
+                                                    <li><strong>التركيب الحشوي/التمهيدي (Expletive):</strong> بدء الجملة بكلمات مثل (There / It) لتمهيد وتأخير الفاعل الحقيقي. غالباً ما يجعل الجملة ركيكة وطويلة بلا داعٍ، لكنه مفيد أحياناً للتركيز وتأخير الصدمة.</li>
+                                                </ul>
+                                            </Ar>
+                                        </Section>
+
+                                        <Section title="Using Parallelism & Balance" subtitle="Dressing equivalent ideas in equivalent garb" icon={LayoutTemplate} color="blue">
+                                            <div className="space-y-4 text-sm leading-relaxed text-slate-700">
+                                                <p><strong>Parallelism</strong> means presenting equivalent ideas in grammatically equivalent forms. It calls attention to their kinship and adds smoothness to the prose.</p>
+                                                
+                                                <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                                                    <p className="text-rose-600 text-xs font-bold mb-1">Non-parallel (Clunky):</p>
+                                                    <p className="italic text-slate-600 text-sm mb-3">Oscar likes reading books, attending plays, and <strong>to search</strong> for antiques.</p>
+                                                    <p className="text-emerald-600 text-xs font-bold mb-1">Parallel (Smooth):</p>
+                                                    <p className="italic text-slate-800 text-sm">Oscar likes reading books, attending plays, and <strong>searching</strong> for antiques.</p>
+                                                </div>
+
+                                                <p><strong>Balance</strong> is a special form of parallelism. It positions two grammatically equivalent ideas on opposite sides of a pivot point (like a comma or semicolon). Balance is extremely effective for pitting <strong>contrasting or clashing ideas</strong> against each other.</p>
+                                                <p className="italic font-serif text-slate-600 text-sm pl-4 border-l-2 border-slate-300">"Hope for the best, and prepare for the worst."</p>
+                                                <p className="italic font-serif text-slate-600 text-sm pl-4 border-l-2 border-slate-300">"When I'm right, nobody ever notices; when I'm wrong, nobody ever forgets."</p>
+                                            </div>
+                                            <Ar title="التوازي النحوي والتوازن (Parallelism & Balance)">
+                                                <strong>التوازي (Parallelism):</strong> هو صياغة الأفكار المتشابهة في قالب نحوي واحد (مثال: استخدام الأفعال المنتهية بـ ing معاً بدلاً من الخلط بينها وبين الأفعال في المصدر) لجعل الجملة سلسة ولامعة.
+                                                <br/><br/>
+                                                <strong>التوازن (Balance):</strong> نوع خاص من التوازي، يضع فكرتين متساويتين نحوياً على طرفي نقطة ارتكاز (مثل الفاصلة). وهو أسلوب ساحر لإبراز <strong>التناقضات والتضاد</strong> (مثال: اِرجُ الأفضل، واستعد للأسوأ).
+                                            </Ar>
+                                        </Section>
+
+                                        <Section title="Choosing the Right Verb Voice" subtitle="Active vs. Passive Voice" icon={Users} color="blue">
+                                            <div className="space-y-4 text-sm leading-relaxed text-slate-700">
+                                                <p>A sentence's voice derives from the relationship between the subject and the action.</p>
+                                                <ul className="list-disc pl-5 space-y-3">
+                                                    <li><strong>Active Voice:</strong> The subject performs the action. It keeps key info front-and-center, making the sentence strong and vigorous. <br/><span className="text-slate-500 italic">"The boy hit the target."</span></li>
+                                                    <li><strong>Passive Voice:</strong> Reverses the relationship; the subject <em>receives</em> the action. Built around a "to be" verb (is, was, were). It dilutes sentence force, creates distance, and adds extra wordiness.<br/><span className="text-slate-500 italic">"The target was hit by the boy."</span></li>
+                                                </ul>
+                                                <p><strong>When to use the Passive Voice:</strong></p>
+                                                <p>While often frowned upon because it creates wordy, plodding sentences, the passive voice is essential in <strong>technical and scientific writing</strong> to explain processes objectively ("iron ore is first converted..."). It is also used to deliberately <strong>mask identities</strong> or avoid placing direct blame ("the lamp got broken").</p>
+                                            </div>
+                                            <Ar title="المبني للمعلوم والمبني للمجهول">
+                                                <ul className="list-disc pr-5 mt-2 space-y-1">
+                                                    <li><strong>المبني للمعلوم (Active):</strong> الفاعل يقوم بالفعل. جملة قوية، مباشرة، وحيوية.</li>
+                                                    <li><strong>المبني للمجهول (Passive):</strong> الفاعل يتلقى الفعل. جملة أطول، تضعف التأثير المباشر، وتخلق مسافة بين القارئ والحدث.</li>
+                                                </ul>
+                                                <strong>متى نستخدم المبني للمجهول؟</strong> يُستخدم بكثرة في <strong>الكتابة العلمية والتقنية</strong> للتركيز على خطوات العملية بدلاً من الشخص الذي قام بها لضمان الموضوعية، أو يُستخدم لغرض <strong>إخفاء هوية الفاعل</strong> والتهرب من المسؤولية.
+                                            </Ar>
+                                        </Section>
+
+                                        <Section title="Avoiding Wordiness" subtitle="Fixing flabby sentences" icon={Feather} color="blue">
+                                            <div className="space-y-4 text-sm leading-relaxed text-slate-700">
+                                                <p>Superfluous means more than what is needed—extra words that can be removed without affecting the core purpose.</p>
+                                                <p><strong>How to sharpen flabby sentences:</strong></p>
+                                                <ol className="list-decimal pl-5 space-y-1">
+                                                    <li>Cut out words that seem unnecessary or redundant (e.g., changing "It is my considered opinion that you will..." to "You will...").</li>
+                                                    <li>Change filler noun-verb pairs back into strong action verbs (e.g., change "give a presentation" to "present").</li>
+                                                    <li>Turn clunky relative clauses into simple adjectives (e.g., change "a watch that was stolen" to "a stolen watch").</li>
+                                                </ol>
+                                            </div>
+                                            <Ar title="تجنب الحشو والكلمات الزائدة">
+                                                للتخلص من الجمل المترهلة (Flabby Sentences): قم بحذف العبارات الافتتاحية التي لا تضيف معنى (مثل: في رأيي المعتبر أنك.. -> أنت..)، وحوّل الأفعال الضعيفة المرفقة بأسماء إلى أفعال حركية قوية (مثل: سيقوم بعمل عرض تقديمي -> سيعرض)، واستبدل الجمل الموصولة الطويلة بصفات مباشرة (مثل: ساعة تمت سرقتها -> ساعة مسروقة).
+                                            </Ar>
+                                        </Section>
+
+                                    </div>
+                                )}
+
+                                {/* TAB 3: COMPARISONS & ANALOGIES */}
+                                {activeTab === 'dr_islam_compare' && (
+                                    <div className="space-y-8 animate-in fade-in duration-300">
+                                        
+                                        <div className="bg-white rounded-3xl shadow-sm border border-slate-200 p-6 flex flex-col md:flex-row gap-6 items-center hover:border-emerald-200 transition-colors">
+                                            <div className="md:w-1/4 flex justify-center">
+                                                <div className="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center border-4 border-white shadow-md text-emerald-600">
+                                                    <Layers size={32} />
+                                                </div>
+                                            </div>
+                                            <div className="md:w-3/4 text-center md:text-left space-y-1">
+                                                <h2 className="text-xl font-black text-slate-900">3. Comparisons & Analogies</h2>
+                                                <p className="text-slate-600 text-sm leading-relaxed">
+                                                    How to structure comparisons using Block and Alternating patterns, and how to effectively deploy analogies in writing.
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <Section title="The Purpose & Selection of Comparisons" icon={SplitSquareHorizontal} color="emerald">
+                                            <div className="space-y-4 text-sm leading-relaxed text-slate-700">
+                                                <p>Comparisons examine two or more items for likenesses, differences, or both. They help readers choose between alternatives (e.g., Microsoft vs. IBM) or acquaint readers with unfamiliar concepts by comparing them to familiar ones (e.g., explaining rugby by comparing it to American football).</p>
+                                                <p><strong>The Rule of Selection:</strong> Any items you compare must share some <strong>common ground</strong>. You cannot meaningfully compare a golfer with a car; there is simply no basis for comparison. Furthermore, you must eliminate points that have no bearing on the guiding purpose (e.g., ignoring eye color when comparing two candidates for a sales manager job).</p>
+                                                <p>Successful comparisons rest upon ample, <strong>vivid details</strong> that paint stark pictures of differences.</p>
+                                            </div>
+                                            <Ar title="الغرض من المقارنة وقواعد اختيار عناصرها">
+                                                المقارنة تفيد في اتخاذ القرارات أو في تبسيط الأشياء المجهولة بربطها بأشياء مألوفة. القاعدة الذهبية هي أنه يجب وجود <strong>أرضية مشتركة</strong> بين العناصر (لا يمكن مقارنة سيارة بلاعب جولف). كما يجب استبعاد أي نقاط لا تخدم الهدف الأساسي للمقال (مثل تجاهل لون العينين عند مقارنة موظفين لوظيفة إدارية) واستخدام تفاصيل حية ودقيقة لتوضيح الفروق.
+                                            </Ar>
+                                        </Section>
+
+                                        <Section title="Organizing a Comparison" subtitle="Block Pattern vs. Alternating Pattern" icon={LayoutTemplate} color="emerald">
+                                            <div className="space-y-4 text-sm leading-relaxed text-slate-700">
+                                                <p>There are two basic patterns to organize a comparison paper:</p>
+                                                
+                                                <div className="space-y-4">
+                                                    <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                                                        <h4 className="font-bold text-slate-900 mb-1">1. The Block Pattern</h4>
+                                                        <p className="mb-2">Presents ALL points for Item A first, then ALL points for Item B.</p>
+                                                        <ul className="list-disc pl-5 text-xs text-slate-600 space-y-1">
+                                                            <li>I. Specific points about Mike (Leadership, Music, Accounting)</li>
+                                                            <li>II. Specific points about Pat (Leadership, Music, Accounting)</li>
+                                                        </ul>
+                                                        <p className="mt-2 text-xs font-semibold">Best used for: Short papers with only a few points, so the reader doesn't forget Item A by the time they reach Item B.</p>
+                                                    </div>
+
+                                                    <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                                                        <h4 className="font-bold text-slate-900 mb-1">2. The Alternating Pattern</h4>
+                                                        <p className="mb-2">Presents a specific point (e.g., Leadership), discusses Item A's traits on that point, and immediately follows with Item B's traits.</p>
+                                                        <ul className="list-disc pl-5 text-xs text-slate-600 space-y-1">
+                                                            <li>I. Leadership Qualities (A: Mike, B: Pat)</li>
+                                                            <li>II. Musical Knowledge (A: Mike, B: Pat)</li>
+                                                        </ul>
+                                                        <p className="mt-2 text-xs font-semibold">Best used for: Longer papers with many points of comparison. It highlights differences instantly without forcing the reader to pause and reread.</p>
+                                                    </div>
+                                                </div>
+                                                <p className="text-xs italic text-slate-500">Writing Strategy: Arrange points moving from the least significant to the most significant point to conclude with punch.</p>
+                                            </div>
+                                            <Ar title="طرق هيكلة وتنظيم المقال المقارن">
+                                                <ul className="list-disc pr-5 mt-2 space-y-1">
+                                                    <li><strong>نمط الكتلة (Block Pattern):</strong> عرض كل صفات العنصر الأول كاملة، ثم كل صفات العنصر الثاني. مفيد جداً للمقالات القصيرة.</li>
+                                                    <li><strong>النمط التبادلي (Alternating Pattern):</strong> إمساك نقطة المقارنة (مثلاً: الراتب) ومناقشتها للعنصرين في نفس الوقت، ثم الانتقال للنقطة التالية. ممتاز للمقالات الطويلة لكي لا ينسى القارئ التفاصيل. يفضل التدرج من النقطة الأقل أهمية للأكثر أهمية لختام المقال بقوة.</li>
+                                                </ul>
+                                            </Ar>
+                                        </Section>
+
+                                        <Section title="Using Analogy" subtitle="Illuminating the unfamiliar" icon={Zap} color="emerald">
+                                            <div className="space-y-4 text-sm leading-relaxed text-slate-700">
+                                                <p>An <strong>analogy</strong> is a special type of comparison that calls attention to similarities underlying two items that normally seem to have nothing in common. They follow the same organizational patterns as standard comparisons.</p>
+                                                <ul className="list-disc pl-5 space-y-2">
+                                                    <li><strong>Explain Unfamiliar via Familiar:</strong> Explaining Earth's atmosphere by likening it to a normal glazed glass window.</li>
+                                                    <li><strong>Illuminate Familiar via Unfamiliar:</strong> Shedding fresh light on a familiar job (teaching) by comparing it to the obligations of an unfamiliar, high-stakes job (a mountain guide).</li>
+                                                </ul>
+                                                <div className="bg-emerald-50 text-emerald-950 p-4 rounded-xl border border-emerald-100 text-xs leading-relaxed space-y-2 mt-4">
+                                                    <p className="font-bold">Rules for Developing Analogies:</p>
+                                                    <ol className="list-decimal pl-5 space-y-1">
+                                                        <li>Readers MUST be well acquainted with the familiar item, otherwise the point is lost.</li>
+                                                        <li>The items must have significant similarities (e.g., kidney vs. filter).</li>
+                                                        <li>It must truly illuminate; overly obvious analogies (battle vs. argument) offer no insight.</li>
+                                                        <li>Do not overextend it; a multipage analogy between a heart and a pump will exhaust the reader.</li>
+                                                    </ol>
+                                                </div>
+                                                <p className="mt-2 text-xs font-bold text-slate-800">Thinking Critically:</p>
+                                                <p className="text-xs text-slate-600">Analogies are not perfect. Ask yourself: What is the writer trying to achieve? What information is missing? Two things may seem similar in one way but be dangerously different in other important ways.</p>
+                                            </div>
+                                            <Ar title="استخدام التشبيه الممتد أو القياس (Analogy)">
+                                                الـ <strong>Analogy</strong> هو نوع خاص من المقارنة يكشف التشابهات بين شيئين لا يبدوان متشابهين ظاهرياً. يُستخدم لشرح المجهول بشيء مألوف (شرح الغلاف الجوي بتشبيهه بنافذة زجاجية)، أو تسليط ضوء جديد على شيء مألوف بشيء غير مألوف (تشبيه المدرس بمرشد تسلق الجبال).
+                                                <br/><br/>
+                                                <strong>شروط نجاحه:</strong> يجب أن يكون الشيء المشبه به مألوفاً جداً للقارئ، وأن يمتلكان تشابهات قوية وحقيقية (الكلى والفلتر)، وألا يكون التشبيه سطحياً وبديهياً، وأخيراً ألا تبالغ وتطيل في التشبيه لصفحات حتى لا ترهق القارئ. (يجب دائماً التفكير نقدياً في التشبيهات لأنها قد تكون مضللة أو تخفي اختلافات جوهرية).
+                                            </Ar>
+                                        </Section>
+
+                                    </div>
+                                )}
+
+                                {/* TAB 4: EXERCISES HUB */}
+                                {activeTab === 'dr_islam_exercises' && (
+                                    <div className="space-y-8 animate-in fade-in duration-300">
+                                        
+                                        <div className="bg-white rounded-3xl shadow-sm border border-slate-200 p-6 flex flex-col md:flex-row gap-6 items-center hover:border-purple-200 transition-colors">
+                                            <div className="md:w-1/4 flex justify-center">
+                                                <div className="w-20 h-20 bg-purple-50 rounded-full flex items-center justify-center border-4 border-white shadow-md text-purple-600">
+                                                    <PenTool size={32} />
+                                                </div>
+                                            </div>
+                                            <div className="md:w-3/4 text-center md:text-left space-y-1">
+                                                <h2 className="text-xl font-black text-slate-900">4. Practice Exercises Hub</h2>
+                                                <p className="text-slate-600 text-sm leading-relaxed">
+                                                    All rewriting, combination, and structural analysis exercises provided in the syllabus text. Click any card to reveal the revised answer.
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-6">
+                                            
+                                            <div>
+                                                <h3 className="font-bold text-slate-800 text-lg mb-3 flex items-center gap-2">
+                                                    <span className="bg-purple-100 text-purple-800 px-2 py-0.5 rounded text-xs">Section 1</span> Reducing Wordiness (Combining)
+                                                </h3>
+                                                <div className="space-y-3">
+                                                    <ExerciseCard 
+                                                        question="He played the piano. He played the organ. He played the French horn. He did not play the viola."
+                                                        answer="He played the piano, organ, and French horn, but not the viola."
+                                                        themeColor="purple"
+                                                    />
+                                                    <ExerciseCard 
+                                                        question="The weather was icy cold and windy. Lee was wearing only a T-shirt and athletic shorts."
+                                                        answer="Although the weather was icy cold and windy, Lee was wearing only a T-shirt and athletic shorts."
+                                                        themeColor="purple"
+                                                    />
+                                                    <ExerciseCard 
+                                                        question="Life on Venus may be possible. It will not be the kind of life we know on Earth. Life on Mars may be possible. It will not be the kind of life we know on Earth."
+                                                        answer="Although life may be possible on Venus and Mars, it will not be the kind we know on Earth."
+                                                        themeColor="purple"
+                                                    />
+                                                    <ExerciseCard 
+                                                        question="He felt his classmates were laughing at his error. He ran out of the room. He vowed never to return to that class."
+                                                        answer="Feeling that his classmates were laughing at his error, he ran out of the room and vowed never to return to that class."
+                                                        themeColor="purple"
+                                                    />
+                                                    <ExerciseCard 
+                                                        question="Albert lay in bed. He stared at the ceiling. Albert thought about the previous afternoon. He had asked Kathy to go to dinner with him. She is a pretty, blond-haired woman. She sits at the desk next to his. They work at Hemphill's. She had refused."
+                                                        answer="Albert lay in bed, staring at the ceiling and thinking about the previous afternoon, when he had asked Kathy-a pretty, blonde-haired woman who sat at the desk next to his at Hemphill's-to dinner, only to be refused."
+                                                        themeColor="purple"
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <div>
+                                                <h3 className="font-bold text-slate-800 text-lg mb-3 flex items-center gap-2 mt-8">
+                                                    <span className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-xs">Section 2</span> Flabby Sentences -> Sharp Sentences
+                                                </h3>
+                                                <div className="space-y-3">
+                                                    <ExerciseCard 
+                                                        question="The principal will give a talk to the parents at the PTA meeting about how important it is for their children to get to school on time."
+                                                        answer="The principal will speak to parents at the PTA meeting about the importance of arriving at school on time."
+                                                        themeColor="blue"
+                                                    />
+                                                    <ExerciseCard 
+                                                        question="I would like to say that no playwright has ever used language as effectively as Shakespeare."
+                                                        answer="No playwright has used language as effectively as Shakespeare."
+                                                        themeColor="blue"
+                                                    />
+                                                    <ExerciseCard 
+                                                        question="Mozart, who was a musical prodigy, is best known for his operas."
+                                                        answer="Mozart, a musical prodigy, is best known for his operas."
+                                                        themeColor="blue"
+                                                    />
+                                                    <ExerciseCard 
+                                                        question="The jewelry store sold me a watch that was stolen."
+                                                        answer="The jewelry store sold me a stolen watch."
+                                                        themeColor="blue"
+                                                    />
+                                                    <ExerciseCard 
+                                                        question="The meeting that was scheduled for 3 p.m. was cancelled because Mr. Rushton, the consultant who was giving the presentation about the results on our computer security, was arrested for creating computer viruses that were very destructive."
+                                                        answer="The 3 p.m. meeting was canceled because Mr. Rushton, the consultant presenting our computer security results, was arrested for creating destructive computer viruses."
+                                                        themeColor="blue"
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <div>
+                                                <h3 className="font-bold text-slate-800 text-lg mb-3 flex items-center gap-2 mt-8">
+                                                    <span className="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded text-xs">Section 3</span> Identifying Word Orders
+                                                </h3>
+                                                <div className="space-y-3">
+                                                    <ExerciseCard 
+                                                        question="Dick Lewis is a true friend."
+                                                        answer="Normal order"
+                                                        themeColor="emerald"
+                                                    />
+                                                    <ExerciseCard 
+                                                        question="It was her car in the ditch."
+                                                        answer="Expletive construction. Rewrite: Her car was in the ditch."
+                                                        themeColor="emerald"
+                                                    />
+                                                    <ExerciseCard 
+                                                        question="May I go to the movie with you?"
+                                                        answer="Inverted (question form). Rewrite: I may go to the movie with you."
+                                                        themeColor="emerald"
+                                                    />
+                                                    <ExerciseCard 
+                                                        question="There are many dead fish on the beach."
+                                                        answer="Expletive construction. Rewrite: Many dead fish are on the beach."
+                                                        themeColor="emerald"
+                                                    />
+                                                    <ExerciseCard 
+                                                        question="The instructor gave the class a long reading assignment."
+                                                        answer="Normal order"
+                                                        themeColor="emerald"
+                                                    />
+                                                    <ExerciseCard 
+                                                        question="It is Marianne's aim to become a lawyer."
+                                                        answer="Expletive construction. Rewrite: Marianne's aim is to become a lawyer."
+                                                        themeColor="emerald"
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <div>
+                                                <h3 className="font-bold text-slate-800 text-lg mb-3 flex items-center gap-2 mt-8">
+                                                    <span className="bg-rose-100 text-rose-800 px-2 py-0.5 rounded text-xs">Section 4</span> Modifiers (Loose, Periodic, Interrupted)
+                                                </h3>
+                                                <div className="space-y-3">
+                                                    <ExerciseCard 
+                                                        question="Victoria, rejected by family and friends, uncertain where to turn next, finally decided to start a new life in Chicago."
+                                                        answer="Type: Interrupted. Rewrite (loose): Victoria finally decided to start a new life in Chicago, rejected by family and friends and uncertain where to turn next."
+                                                        themeColor="rose"
+                                                    />
+                                                    <ExerciseCard 
+                                                        question="When told that she had to have her spleen removed, the woman gasped."
+                                                        answer="Type: Periodic. Rewrite (loose): The woman gasped when she was told that she had to have her spleen removed."
+                                                        themeColor="rose"
+                                                    />
+                                                    <ExerciseCard 
+                                                        question="The first graders stood in line, talking and giggling, pushing at one another's caps and pencil boxes and kicking one another's shins, unmindful of the drudgery that awaited them within the old schoolhouse."
+                                                        answer="Type: Loose. Rewrite (periodic): Talking and giggling, pushing at one another's caps and pencil boxes, and kicking one another's shins, unmindful of the drudgery that awaited them within the old schoolhouse, the first graders stood in line."
+                                                        themeColor="rose"
+                                                    />
+                                                    <ExerciseCard 
+                                                        question="Good health, warm friends a beautiful summer evening-the best things cannot be purchased."
+                                                        answer="Type: Periodic (main idea comes at the end). Rewrite (loose): The best things cannot be purchased-good health, warm friends, and a beautiful summer evening."
+                                                        themeColor="rose"
+                                                    />
+                                                    <ExerciseCard 
+                                                        question="A customer, angry and perspiring, stormed up to the claims desk."
+                                                        answer="Type: Interrupted. Rewrite (loose): A customer stormed up to the claims desk, angry and perspiring."
+                                                        themeColor="rose"
+                                                    />
+                                                    <ExerciseCard 
+                                                        question="Stopping just short of the tunnel entrance, the freight train avoided a collision with the crowded commuter train stalled inside."
+                                                        answer="Type: Periodic. Rewrite (loose): The freight train avoided a collision with the crowded commuter train stalled inside by stopping just short of the tunnel entrance."
+                                                        themeColor="rose"
+                                                    />
+                                                    <ExerciseCard 
+                                                        question="The new kid hammered away at the fading champ, determination in his eyes and glory in his fists."
+                                                        answer="Type: Loose. Rewrite (interrupted): The new kid, with determination in his eyes and glory in his fists, hammered away at the fading champ."
+                                                        themeColor="rose"
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <div>
+                                                <h3 className="font-bold text-slate-800 text-lg mb-3 flex items-center gap-2 mt-8">
+                                                    <span className="bg-amber-100 text-amber-800 px-2 py-0.5 rounded text-xs">Section 5</span> Parallelism & Balance
+                                                </h3>
+                                                <div className="space-y-3">
+                                                    <ExerciseCard 
+                                                        question="Professor Bartlett enjoys helping students, counseling advisees, and participation in faculty meetings."
+                                                        answer="Type: Nonparallel. Rewrite: Professor Bartlett enjoys helping students, counseling advisees, and participating in faculty meetings."
+                                                        themeColor="amber"
+                                                    />
+                                                    <ExerciseCard 
+                                                        question="I can still see Aunt Alva striding into the corral, cornering a cow against a fencepost, try to balance herself on a one-legged milking stool, and butt her head into the cow's belly."
+                                                        answer="Type: Nonparallel. Rewrite: I can still see Aunt Alva striding into the corral, cornering a cow against a fencepost, trying to balance herself on a one-legged milking stool, and butting her head into the cow's belly."
+                                                        themeColor="amber"
+                                                    />
+                                                    <ExerciseCard 
+                                                        question="The city plans on building a new fishing pier and on dredging the channel of the river."
+                                                        answer="Type: Parallel"
+                                                        themeColor="amber"
+                                                    />
+                                                    <ExerciseCard 
+                                                        question="Elton plans on vacationing in New York, but Noreen wants to raft down the Colorado River."
+                                                        answer="Type: Nonparallel (unequal verb structures). Rewrite: Elton plans on vacationing in New York, but Noreen plans on rafting down the Colorado River. (or) Elton wants to vacation in New York, but Noreen wants to raft down the Colorado River."
+                                                        themeColor="amber"
+                                                    />
+                                                    <ExerciseCard 
+                                                        question="You can take the boy out of the country, but you can't take the country out of the boy."
+                                                        answer="Type: Balanced (and parallel)"
+                                                        themeColor="amber"
+                                                    />
+                                                    <ExerciseCard 
+                                                        question="Joe's problem is not that he earns too little money but spending it foolishly."
+                                                        answer="Type: Nonparallel. Rewrite: Joe's problem is not that he earns too little money but that he spends it foolishly."
+                                                        themeColor="amber"
+                                                    />
+                                                    <ExerciseCard 
+                                                        question="The room was dark, gloomy, and everything was dusty."
+                                                        answer="Type: Nonparallel. Rewrite: The room was dark, gloomy, and dusty."
+                                                        themeColor="amber"
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <div>
+                                                <h3 className="font-bold text-slate-800 text-lg mb-3 flex items-center gap-2 mt-8">
+                                                    <span className="bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded text-xs">Section 6</span> Active vs. Passive Voice
+                                                </h3>
+                                                <div className="space-y-3">
+                                                    <ExerciseCard 
+                                                        question="Mary's parents gave her a sports car for her sixteenth birthday."
+                                                        answer="Voice: Active"
+                                                        themeColor="indigo"
+                                                    />
+                                                    <ExerciseCard 
+                                                        question="Fires were left burning by negligent campers."
+                                                        answer="Voice: Passive. Rewrite: Negligent campers left fires burning."
+                                                        themeColor="indigo"
+                                                    />
+                                                    <ExerciseCard 
+                                                        question="The new ice arena will be opened by the city in about two weeks."
+                                                        answer="Voice: Passive. Rewrite: The city will open the new ice arena in about two weeks."
+                                                        themeColor="indigo"
+                                                    />
+                                                    <ExerciseCard 
+                                                        question="Harry left the open toolbox out in the rain."
+                                                        answer="Voice: Active"
+                                                        themeColor="indigo"
+                                                    />
+                                                    <ExerciseCard 
+                                                        question="Corn was introduced to the Pilgrims by friendly American Indians."
+                                                        answer="Voice: Passive. Rewrite: Friendly American Indians introduced corn to the Pilgrims."
+                                                        themeColor="indigo"
+                                                    />
+                                                    <ExerciseCard 
+                                                        question="Objections were raised by some members of the legislature to the ratification of the proposed amendment."
+                                                        answer="Voice: Passive. Rewrite: Some members of the legislature raised objections to the ratification of the proposed amendment."
+                                                        themeColor="indigo"
+                                                    />
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                )}
+                            </>
+                        )}
+
+                        {/* =========================================
+                            PORTAL 2: DR. ABDULLAH (PART 2)
+                            ========================================= */}
+                        {activeDoctor === 'abdullah' && (
+                            <>
+                                {/* TAB 1: PARAGRAPHS & UNITY */}
+                                {activeTab === 'dr_abdullah_writing' && (
+                                    <div className="space-y-8 animate-in fade-in duration-300">
+                                        
+                                        <div className="bg-white rounded-3xl shadow-sm border border-slate-200 p-6 flex flex-col md:flex-row gap-6 items-center hover:border-amber-200 transition-colors">
+                                            <div className="md:w-1/4 flex justify-center">
+                                                <div className="w-20 h-20 bg-amber-50 rounded-full flex items-center justify-center border-4 border-white shadow-md text-amber-600">
+                                                    <FileText size={32} />
+                                                </div>
+                                            </div>
+                                            <div className="md:w-3/4 text-center md:text-left space-y-1">
+                                                <h2 className="text-xl font-black text-slate-900">1. Paragraphs & Unity</h2>
+                                                <p className="text-slate-600 text-sm leading-relaxed">
+                                                    Understanding the core importance of writing, and how to build strong, unified paragraphs with clear topic sentences and adequate development.
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <Section title="The Importance of Writing" subtitle="Why we write" icon={Feather} color="amber">
+                                            <div className="space-y-4 text-sm leading-relaxed text-slate-700">
+                                                <p>Writing is a critical foundation for intellect, learning, and expression. Out of the 30 reasons discussed, here are the core benefits that make writing essential:</p>
+                                                <ul className="list-disc pl-5 space-y-3">
+                                                    <li><strong>Communication & Connection:</strong> Excellent communication stems from excellent writing. It forms bonds with others and clearly transmits ideas to specific audiences.</li>
+                                                    <li><strong>Mental & Cognitive Health:</strong> Writing engages both sides of the brain (creative and analytical). Journaling fears, thoughts, and worries shrinks their negative impact and benefits mental health.</li>
+                                                    <li><strong>Organization & Goal Setting:</strong> Getting to-dos out of your head organizes your thoughts. You are 42% more likely to achieve written goals.</li>
+                                                    <li><strong>Career & Society:</strong> Writing is a legitimate career and an essential job skill. Well-written works are respected more in business, and written words (journalism, speeches) influence all of society.</li>
+                                                    <li><strong>Preserving History:</strong> Without writing, we would not have history, records, or religious scriptures. It preserves ideas permanently.</li>
+                                                </ul>
+                                            </div>
+                                            <Ar title="أهمية الكتابة">
+                                                تعد الكتابة مهارة تواصل أساسية؛ فهي تبني الانضباط، وتشرك نصفي الدماغ. تفيد الصحة النفسية بالتعبير عن المخاوف مما يقلل من تأثيرها السلبي. من الناحية العملية، تساعد على تنظيم الأفكار، وتزيد فرصة تحقيق الأهداف بنسبة 42%. كما أنها مهارة مهنية تُكسب صاحبها الاحترام، ولولا الكتابة لما حُفظت الثقافات والتاريخ والأديان.
+                                            </Ar>
+                                        </Section>
+
+                                        <Section title="Paragraph Unity & Topic Sentences" subtitle="One paragraph, one idea" icon={LayoutTemplate} color="amber">
+                                            <div className="space-y-4 text-sm leading-relaxed text-slate-700">
+                                                <p><strong>Paragraph Unity:</strong> A paragraph with unity develops <strong>one, and only one</strong>, key controlling idea. To ensure unity, you must edit out any stray, irrelevant ideas that confuse the reader.</p>
+                                                
+                                                <h4 className="font-bold text-slate-900 mt-4 mb-2">The Topic Sentence</h4>
+                                                <p>The topic sentence states the main idea. It is the rallying point for all supporting sentences. It can be placed in different locations depending on the desired effect:</p>
+                                                <ul className="list-decimal pl-5 space-y-2">
+                                                    <li><strong>First:</strong> The most common. Reveals the central idea immediately.</li>
+                                                    <li><strong>Last:</strong> Builds suspense and builds gradually to a summarizing conclusion.</li>
+                                                    <li><strong>First and Last:</strong> Restates the opening idea at the end for special emphasis.</li>
+                                                    <li><strong>Middle:</strong> Follows background info, shifts the emphasis, then develops the idea.</li>
+                                                    <li><strong>Implied:</strong> No explicit topic sentence. Used in narratives/descriptions where all details collectively suggest a clear idea.</li>
+                                                </ul>
+                                            </div>
+                                            <Ar title="وحدة الفقرة (Unity) والجملة الرئيسية (Topic Sentence)">
+                                                <strong>الوحدة (Unity):</strong> يجب أن تناقش الفقرة <strong>فكرة رئيسية واحدة فقط</strong>، ويجب حذف أي جمل جانبية تشتت القارئ.
+                                                <br/><br/>
+                                                <strong>الجملة الرئيسية (Topic Sentence):</strong> هي الجملة التي تحمل الفكرة الأساسية. يمكن وضعها في <strong>أول الفقرة</strong> (مباشرة وواضحة)، أو <strong>آخرها</strong> (لخلق تشويق وبناء استنتاج)، أو <strong>في الأول والآخر معاً</strong> (للتأكيد)، أو <strong>في المنتصف</strong> (بعد تمهيد)، أو قد تكون <strong>ضمنية (Implied)</strong> يُستنتج معناها من الأحداث المكتوبة.
+                                            </Ar>
+                                        </Section>
+
+                                        <Section title="Development and Coherence" subtitle="Filling the gaps and flowing smoothly" icon={SplitSquareHorizontal} color="amber">
+                                            <div className="space-y-4 text-sm leading-relaxed text-slate-700">
+                                                <p><strong>Paragraph Development:</strong> Skimpy paragraphs force readers to fill in gaps, while stuffed paragraphs dilute the main idea. Provide enough details (facts, examples, personal experiences) to make the point clear without padding.</p>
+                                                <ul className="list-disc pl-5 space-y-1 mb-4 text-xs text-slate-600">
+                                                    <li><em>Major supporting sentences</em> directly explain the main idea.</li>
+                                                    <li><em>Minor supporting sentences</em> add extra details or examples to the major ones.</li>
+                                                </ul>
+
+                                                <p><strong>Coherence:</strong> Coherent writing flows smoothly from one sentence to another. Incoherent writing confuses readers with logical gaps. To achieve coherence, use transitional devices:</p>
+                                                <ul className="list-decimal pl-5 space-y-2">
+                                                    <li><strong>Connecting words/phrases:</strong> To show contrast (<em>however, but, on the other hand</em>), results (<em>therefore, as a result</em>), additions (<em>furthermore, moreover</em>).</li>
+                                                    <li><strong>Repeated key words:</strong> Reminds the reader of the core subject.</li>
+                                                    <li><strong>Pronouns:</strong> Replaces nouns to avoid clunky repetition while maintaining the link.</li>
+                                                    <li><strong>Parallelism:</strong> Using repetition of grammatical forms to express a series of equivalent ideas rhythmically.</li>
+                                                </ul>
+                                            </div>
+                                            <Ar title="تطوير الفقرة وتماسكها (Development & Coherence)">
+                                                <strong>التطوير (Development):</strong> الفقرات القصيرة جداً تربك القارئ، والمحشوة بلا داعٍ تشتته. يجب دعم الفقرة بحقائق وأمثلة كافية (جمل داعمة رئيسية وفرعية).
+                                                <br/><br/>
+                                                <strong>التماسك (Coherence):</strong> هو التدفق السلس بين الجمل. يتحقق باستخدام <strong>أدوات الربط</strong> (مثل: مع ذلك، بناءً عليه، بالإضافة إلى)، أو بتكرار <strong>الكلمات المفتاحية</strong>، أو استخدام <strong>الضمائر</strong> لتفادي التكرار، أو استخدام <strong>التوازي النحوي</strong> لخلق إيقاع متوازن.
+                                            </Ar>
+                                        </Section>
+
+                                    </div>
+                                )}
+
+                                {/* TAB 2: SPECIAL PARAGRAPHS */}
+                                {activeTab === 'dr_abdullah_special' && (
+                                    <div className="space-y-8 animate-in fade-in duration-300">
+                                        
+                                        <div className="bg-white rounded-3xl shadow-sm border border-slate-200 p-6 flex flex-col md:flex-row gap-6 items-center hover:border-teal-200 transition-colors">
+                                            <div className="md:w-1/4 flex justify-center">
+                                                <div className="w-20 h-20 bg-teal-50 rounded-full flex items-center justify-center border-4 border-white shadow-md text-teal-600">
+                                                    <SplitSquareHorizontal size={32} />
+                                                </div>
+                                            </div>
+                                            <div className="md:w-3/4 text-center md:text-left space-y-1">
+                                                <h2 className="text-xl font-black text-slate-900">2. Special Paragraphs & Organization</h2>
+                                                <p className="text-slate-600 text-sm leading-relaxed">
+                                                    Crafting powerful introductions, seamless transitions, impactful conclusions, and organizing ideas effectively.
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <Section title="Types of Introductions" subtitle="First impressions matter" icon={BookOpen} color="teal">
+                                            <div className="space-y-4 text-sm leading-relaxed text-slate-700">
+                                                <p>A good introduction announces the topic, sets the tone, and draws the reader in. Avoid mechanical openings like "In this paper I intend to...". Here are effective approaches:</p>
+                                                <ul className="list-decimal pl-5 space-y-2">
+                                                    <li><strong>Directly Stated Thesis:</strong> Orients the reader immediately after a general background.</li>
+                                                    <li><strong>Definition:</strong> Works well when acquainting the reader with an unfamiliar or complex topic (e.g., Agoraphobia).</li>
+                                                    <li><strong>Quotation:</strong> Using an authority's words as a springboard for your ideas.</li>
+                                                    <li><strong>Anecdote or Personal Experience:</strong> A brief story that lures readers in and relates clearly to the topic.</li>
+                                                    <li><strong>Arresting Statement:</strong> Jolts the reader into attention, often used for unusual or extreme positions.</li>
+                                                    <li><strong>Interesting Details:</strong> Piques curiosity by zooming in on specific, vivid descriptions.</li>
+                                                    <li><strong>A Question:</strong> Entices the reader to continue reading to find the answer.</li>
+                                                </ul>
+                                            </div>
+                                            <Ar title="أنواع المقدمات (Introductions)">
+                                                المقدمة تجذب القارئ وتحدد نبرة المقال. من أسوأ البدايات "في هذا المقال سأتحدث عن...". أفضل الطرق لبدء المقال:
+                                                <br/>
+                                                (1) <strong>طرح الأطروحة مباشرة</strong>. (2) <strong>تعريف مصطلح غريب</strong>. (3) <strong>اقتباس قوي</strong>. (4) <strong>حكاية أو تجربة شخصية</strong>. (5) <strong>جملة صادمة أو مفاجئة</strong> لجذب الانتباه. (6) <strong>تفاصيل مثيرة</strong> تثير الفضول. (7) <strong>طرح سؤال</strong> يدفع القارئ للبحث عن إجابته.
+                                            </Ar>
+                                        </Section>
+
+                                        <Section title="Transitional Paragraphs & Conclusions" icon={SplitSquareHorizontal} color="teal">
+                                            <div className="space-y-4 text-sm leading-relaxed text-slate-700">
+                                                <p><strong>Transitional Paragraphs:</strong> Short paragraphs used in lengthy essays to announce a shift from one group of ideas to another. They summarize previous ideas or point to what follows.</p>
+                                                
+                                                <p><strong>Conclusions:</strong> Round out a paper and signal completion. <em>Cautions:</em> Don't introduce new material, don't write a rushed "midnight special," don't apologize, and don't be overly preachy/moralizing.</p>
+                                                <h4 className="font-bold text-slate-900 mt-2 mb-1">Types of Conclusions:</h4>
+                                                <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                                                    <li className="bg-slate-50 p-2 rounded border"><strong>1. Restatement of Thesis:</strong> Reasserts the main argument.</li>
+                                                    <li className="bg-slate-50 p-2 rounded border"><strong>2. Summary:</strong> Draws together and reinforces main points.</li>
+                                                    <li className="bg-slate-50 p-2 rounded border"><strong>3. A Question:</strong> Prompts further thought or persuades.</li>
+                                                    <li className="bg-slate-50 p-2 rounded border"><strong>4. A Quotation:</strong> Ends with authority.</li>
+                                                    <li className="bg-slate-50 p-2 rounded border"><strong>5. Ironic Twist:</strong> An unexpected, thought-provoking observation.</li>
+                                                    <li className="bg-slate-50 p-2 rounded border"><strong>6. Arresting Statement:</strong> A powerful, final warning or thought.</li>
+                                                    <li className="bg-slate-50 p-2 rounded border"><strong>7. Personal Challenge:</strong> Prompts the reader to take action.</li>
+                                                    <li className="bg-slate-50 p-2 rounded border"><strong>8. Hope or Recommendation:</strong> Suggests solutions or paths forward.</li>
+                                                </ul>
+                                            </div>
+                                            <Ar title="الفقرات الانتقالية والخواتيم (Transitions & Conclusions)">
+                                                <strong>الفقرات الانتقالية:</strong> فقرات قصيرة جداً تُستخدم في المقالات الطويلة للانتقال بسلاسة من فكرة لأخرى.
+                                                <br/><br/>
+                                                <strong>الخواتيم:</strong> تنهي المقال بقوة. <em>تحذيرات:</em> لا تضف معلومات جديدة، ولا تعتذر أبداً عن تقصيرك. 
+                                                <br/><strong>طرق الختام:</strong> إعادة صياغة الأطروحة، تلخيص النقاط، طرح سؤال مفتوح، اقتباس، مفارقة ساخرة، جملة تحذيرية صادمة، تحدي يحفز القارئ، أو التوصية بحل للمشكلة.
+                                            </Ar>
+                                        </Section>
+
+                                        <Section title="Writing Strategies / Organization" subtitle="Arranging your thoughts" icon={Layers} color="teal">
+                                            <div className="space-y-4 text-sm leading-relaxed text-slate-700">
+                                                <p>An effective paragraph unfolds in a clear pattern so readers can easily follow. The choice depends on your material and purpose. Common strategies include:</p>
+                                                <ul className="list-disc pl-5 space-y-2">
+                                                    <li><strong>Time Sequence (Narration):</strong> Tracing events chronologically as they happen.</li>
+                                                    <li><strong>Space Sequence (Description):</strong> Moving through physical space (top to bottom, left to right, near to far).</li>
+                                                    <li><strong>Process Analysis:</strong> Step-by-step instructions on how something is done or made.</li>
+                                                    <li><strong>Order of Climax:</strong> Creating a crescendo pattern. Starts with the least emphatic detail and builds suspense up to the most powerful point at the end.</li>
+                                                    <li><em>Other patterns include:</em> Classification, Cause/Effect, Illustration, Comparison, Argument, and Definition.</li>
+                                                </ul>
+                                            </div>
+                                            <Ar title="استراتيجيات تنظيم المقال (Organization)">
+                                                لترتيب الأفكار بنسق واضح يمكنك استخدام أحد هذه الأنماط:
+                                                <ul className="list-disc pr-5 mt-2 space-y-1">
+                                                    <li><strong>التسلسل الزمني (Narration):</strong> سرد الأحداث ترتيباً حسب وقت وقوعها.</li>
+                                                    <li><strong>التسلسل المكاني (Description):</strong> الوصف عبر الانتقال في المكان (من اليمين لليسار، من الأقرب للأبعد).</li>
+                                                    <li><strong>تحليل الخطوات (Process):</strong> شرح تسلسل الخطوات لعمل شيء ما (مثل الوصفات).</li>
+                                                    <li><strong>التدرج نحو الذروة (Climax):</strong> البدء بالمعلومة الأقل أهمية والتصاعد تدريجياً لزيادة التشويق حتى الوصول للذروة في النهاية.</li>
+                                                </ul>
+                                            </Ar>
+                                        </Section>
+
+                                    </div>
+                                )}
+
+                                {/* TAB 3: STYLE & DICTION */}
+                                {activeTab === 'dr_abdullah_style' && (
+                                    <div className="space-y-8 animate-in fade-in duration-300">
+                                        
+                                        <div className="bg-white rounded-3xl shadow-sm border border-slate-200 p-6 flex flex-col md:flex-row gap-6 items-center hover:border-indigo-200 transition-colors">
+                                            <div className="md:w-1/4 flex justify-center">
+                                                <div className="w-20 h-20 bg-indigo-50 rounded-full flex items-center justify-center border-4 border-white shadow-md text-indigo-600">
+                                                    <Quote size={32} />
+                                                </div>
+                                            </div>
+                                            <div className="md:w-3/4 text-center md:text-left space-y-1">
+                                                <h2 className="text-xl font-black text-slate-900">3. Style, Tone, and Diction</h2>
+                                                <p className="text-slate-600 text-sm leading-relaxed">
+                                                    Selecting the right words, managing connotations, establishing appropriate tone, and mastering figurative language while eliminating flaws.
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <Section title="Selecting Words: Concrete vs. Abstract" icon={Feather} color="indigo">
+                                            <div className="space-y-4 text-sm leading-relaxed text-slate-700">
+                                                <p><strong>Abstract words</strong> name general concepts that don't immediately point to something we can experience with our senses (e.g., <em>Freedom, love, patriotism</em>). Used carefully, they motivate powerful responses; overused, they leave writing vague.</p>
+                                                <p><strong>Concrete words</strong> evoke precise, vivid mental images. A thing is concrete if we can weigh it, hold it, or photograph it. They add precision and "juice" to writing.</p>
+                                                <p><strong>Specific vs. General:</strong> We must decide how specific to be based on the context. E.g., Animal -> Mammal -> Dog -> Collie -> Lassie. If writing about a rich jet-setter, mentioning he drives a <em>Ferrari</em> (specific) is better than saying he drives a <em>car</em> (general).</p>
+                                            </div>
+                                            <Ar title="اختيار الكلمات: المجرد والملموس">
+                                                <ul className="list-disc pr-5 mt-2 space-y-1">
+                                                    <li><strong>الكلمات المجردة (Abstract):</strong> مفاهيم عامة لا تدرك بالحواس (كالحرية والحب). كثرتها تجعل النص مبهماً.</li>
+                                                    <li><strong>الكلمات الملموسة (Concrete):</strong> أشياء دقيقة يمكن لمسها أو رؤيتها. تعطي النص حيوية ودقة.</li>
+                                                </ul>
+                                                كما يجب التدرج من العام إلى الخاص متى استدعى الأمر. (قولك أن الثري يمتلك "فيراري" أقوى درامياً من قولك يمتلك "سيارة").
+                                            </Ar>
+                                        </Section>
+
+                                        <Section title="Levels of Diction & Tone" icon={Users} color="indigo">
+                                            <div className="space-y-4 text-sm leading-relaxed text-slate-700">
+                                                <p>Your audience and purpose dictate your <strong>level of diction</strong>. All college/job writing should be <em>Edited American English</em> (not nonstandard).</p>
+                                                <ul className="list-disc pl-5 space-y-2">
+                                                    <li><strong>Formal Level:</strong> Serious and dignified. Multisyllabic, abstract words, no slang or contractions. Long, periodic, parallel sentences. (e.g., JFK's Inaugural Address).</li>
+                                                    <li><strong>Informal Level:</strong> Intelligent conversation. Ordinary words, loose sentences, contractions, and first-person pronouns (I, you).</li>
+                                                    <li><strong>Formal-Informal Level:</strong> A mix commonly used today in articles. Mixes complex structures with relaxed phrasing.</li>
+                                                    <li><strong>Technical Level:</strong> For specialists. Uses specialized jargon (e.g., <em>neurotransmitter, presynaptic</em>) and complex sentences but without the poetic parallelism of formal diction.</li>
+                                                </ul>
+                                                
+                                                <p className="mt-4 border-t pt-4"><strong>Denotation vs. Connotation:</strong></p>
+                                                <p><strong>Denotation</strong> is the direct, dictionary definition (objective). <strong>Connotation</strong> is the emotional value or association (subjective). Both "cop" and "police officer" denote the same thing, but carry drastically different connotations.</p>
+                                                
+                                                <p className="mt-2"><strong>Objective Tone:</strong> Keeps the writer's personality out of the message, businesslike and authoritative (used in medical/scientific writing). Other tones can be satiric, serious, or playful depending on persuasive goals.</p>
+                                            </div>
+                                            <Ar title="مستويات اللغة والنبرة الدلالية">
+                                                <ul className="list-disc pr-5 mt-2 space-y-1">
+                                                    <li><strong>المستوى الرسمي (Formal):</strong> كلمات طويلة ومجردة، جمل معقدة، لا يحتوي على اختصارات (يُستخدم في الخطابات السياسية).</li>
+                                                    <li><strong>المستوى غير الرسمي (Informal):</strong> كالمحادثات الراقية، كلمات بسيطة، واستخدام ضمائر المتكلم (I, you).</li>
+                                                    <li><strong>المستوى التقني (Technical):</strong> موجه للمتخصصين، مليء بالمصطلحات العلمية (Jargon).</li>
+                                                </ul>
+                                                <br/>
+                                                <strong>المعنى الحرفي (Denotation) مقابل الإيحاء (Connotation):</strong> المعنى الحرفي هو تعريف القاموس المجرد. الإيحاء هو المشاعر المرتبطة بالكلمة (مثال: كلمة "شرطي" و"مخبر" لهما نفس المعنى الحرفي لكن إيحاءاتهما مختلفة تماماً).
+                                            </Ar>
+                                        </Section>
+
+                                        <Section title="Figurative Language & Irony" subtitle="Adding artistic impact" icon={Sparkles} color="indigo">
+                                            <div className="space-y-4 text-sm leading-relaxed text-slate-700">
+                                                <p>Figurative language uses words non-literally to create sharply etched sensory images.</p>
+                                                <ul className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                                                    <li className="bg-slate-50 p-3 rounded-lg border"><strong>Simile:</strong> Compares unlike things using <em>like</em> or <em>as</em>. (e.g., As restless as an aspen leaf).</li>
+                                                    <li className="bg-slate-50 p-3 rounded-lg border"><strong>Metaphor:</strong> Compares without like/as. (e.g., The moon was a wind-tossed bark).</li>
+                                                    <li className="bg-slate-50 p-3 rounded-lg border"><strong>Personification:</strong> Assigns human traits to nonhuman things. (e.g., The vine clung stubbornly).</li>
+                                                    <li className="bg-slate-50 p-3 rounded-lg border"><strong>Overstatement (Hyperbole):</strong> Deliberate exaggeration to make a point. (e.g., He has 114 offenses out of a possible 115).</li>
+                                                    <li className="bg-slate-50 p-3 rounded-lg border"><strong>Understatement:</strong> Making an assertion humbly to draw attention to it. (e.g., Calling a 23-2 record "pretty fair").</li>
+                                                    <li className="bg-slate-50 p-3 rounded-lg border"><strong>Irony:</strong> Intentionally stating one thing but meaning the opposite.</li>
+                                                </ul>
+                                            </div>
+                                            <Ar title="الصور البلاغية والمفارقة">
+                                                <ul className="list-disc pr-5 mt-2 space-y-1">
+                                                    <li><strong>التشبيه (Simile):</strong> مقارنة باستخدام أداة (كـ / مثل).</li>
+                                                    <li><strong>الاستعارة (Metaphor):</strong> تشبيه بليغ بدون أدوات.</li>
+                                                    <li><strong>التشخيص (Personification):</strong> إعطاء صفات بشرية لجماد.</li>
+                                                    <li><strong>المبالغة (Overstatement):</strong> تضخيم الوصف للتأكيد.</li>
+                                                    <li><strong>التقليل (Understatement):</strong> التواضع في الوصف لتسليط الضوء بشكل غير مباشر (مثل وصف فريق لا يُهزم بأنه "لا بأس به").</li>
+                                                    <li><strong>المفارقة (Irony):</strong> قول عكس المقصود بغرض السخرية أو إيصال رسالة مبطنة.</li>
+                                                </ul>
+                                            </Ar>
+                                        </Section>
+
+                                        <Section title="Eliminating Flawed Diction" icon={XCircle} color="indigo">
+                                            <div className="space-y-3 text-sm leading-relaxed text-slate-700">
+                                                <p><strong>1. Wordiness (Deadwood & Gobbledygook):</strong> Deadwood takes up space without adding meaning. Gobbledygook uses overly technical/long words to unnecessarily complicate a sentence (e.g., "exhibited a 100% mortality response" -> "All the fish died").</p>
+                                                <p><strong>2. Ambiguity:</strong> Sentences that leave the reader guessing the intent (e.g., "killed off his employees" when meaning "fired them").</p>
+                                                <p><strong>3. Euphemisms:</strong> Words taking the sting out of reality (e.g., <em>pass away</em> for die). Best avoided unless protecting a sensitive reader; they can obscure horrific reality.</p>
+                                                <p><strong>4. Colloquial & Slang:</strong> Informal/arbitrary vocab. Rarely appropriate in formal writing, though occasionally useful in dialogue.</p>
+                                                <p><strong>5. Clichés & Mixed Metaphors:</strong> Stale, overused expressions (e.g., <em>green with envy</em>). Mixed metaphors combine two incompatible clichés comically (e.g., "When he opened that can of worms, he bit off more than he could chew").</p>
+                                                <p><strong>6. Sexist Language:</strong> Unnecessarily mentioning appearance/spouses, using male pronouns for general subjects, or using gendered job titles (e.g., use <em>Police officer</em>, not Policeman).</p>
+                                            </div>
+                                            <Ar title="التخلص من الألفاظ المعيبة">
+                                                تجنب الآتي في كتاباتك:
+                                                <strong>الحشو والكلام المعقد (Wordiness):</strong> الكلمات الميتة والمصطلحات المعقدة التي يمكن استبدالها بكلمة بسيطة. <strong>الغموض (Ambiguity):</strong> الجمل التي تحتمل معنيين وتشتت القارئ. <strong>الكلمات الملطفة (Euphemisms):</strong> تجميل الكلمات القاسية (مثل "تُوفي" بدلاً من "مات")، ويفضل تجنبها لأنها تخفي الحقائق. <strong>العامية (Slang):</strong> ممنوعة في الكتابة الرسمية. <strong>الكليشيهات (Clichés):</strong> التعبيرات المكررة والمستهلكة. <strong>اللغة المتحيزة جنسياً (Sexist Language):</strong> مثل استخدام المذكر للإشارة للجميع، أو تخصيص الوظائف بجنس معين (استخدم إطفائي بدلاً من رجل إطفاء).
+                                            </Ar>
+                                        </Section>
+
+                                    </div>
+                                )}
+
+                                {/* TAB 4: RHETORICAL MODES */}
+                                {activeTab === 'dr_abdullah_modes' && (
+                                    <div className="space-y-8 animate-in fade-in duration-300">
+                                        
+                                        <div className="bg-white rounded-3xl shadow-sm border border-slate-200 p-6 flex flex-col md:flex-row gap-6 items-center hover:border-rose-200 transition-colors">
+                                            <div className="md:w-1/4 flex justify-center">
+                                                <div className="w-20 h-20 bg-rose-50 rounded-full flex items-center justify-center border-4 border-white shadow-md text-rose-600">
+                                                    <Image size={32} />
+                                                </div>
+                                            </div>
+                                            <div className="md:w-3/4 text-center md:text-left space-y-1">
+                                                <h2 className="text-xl font-black text-slate-900">4. Rhetorical Modes</h2>
+                                                <p className="text-slate-600 text-sm leading-relaxed">
+                                                    Mastering Description, Illustration, and Definition to effectively communicate ideas and boundaries to the reader.
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <Section title="Description: Presenting Impressions" icon={Image} color="rose">
+                                            <div className="space-y-4 text-sm leading-relaxed text-slate-700">
+                                                <p>Effective description creates sharply etched word pictures using <strong>sensory impressions</strong> (sight, sound, taste, smell, touch). These build toward a <strong>Dominant Impression</strong>—an overall mood or feeling (e.g., joy, terror, security).</p>
+                                                <p><strong>Vantage Point:</strong></p>
+                                                <ul className="list-disc pl-5 space-y-1">
+                                                    <li><em>Fixed observer:</em> Remains in one place and reports only what can be perceived from there.</li>
+                                                    <li><em>Moving observer:</em> Views things from multiple positions (e.g., moving from the sky to the ground), signaled by transition phrases.</li>
+                                                </ul>
+                                                <p><strong>Selection & Arrangement:</strong> Description depends on exclusion as much as inclusion. Don't list everything; select details that point toward the mood. Arrange them spatially (top to bottom) or temporally.</p>
+                                            </div>
+                                            <Ar title="الوصف ورسم الانطباعات">
+                                                الوصف الفعال يعتمد على <strong>الحواس الخمس</strong> لخلق <strong>انطباع سائد (Dominant Impression)</strong> يعكس حالة مزاجية معينة كالرعب أو الطمأنينة. 
+                                                <br/>
+                                                يمكن للكاتب الوصف من نقطة <strong>ثابتة</strong> (لا يصف إلا ما يراه من مكانه)، أو نقطة <strong>متحركة</strong>. الأهم في الوصف هو <strong>الاستبعاد</strong>، فلا تذكر كل تفصيلة، بل اختر فقط التفاصيل التي تدعم الحالة المزاجية المرجوة ورتبها مكانياً أو زمانياً.
+                                            </Ar>
+                                        </Section>
+
+                                        <Section title="Illustration: Clarifying with Examples" icon={LayoutTemplate} color="rose">
+                                            <div className="space-y-4 text-sm leading-relaxed text-slate-700">
+                                                <p>Illustration clarifies general statements or abstract principles by supplying concrete examples. They must stay on target and display the chief features of the concept.</p>
+                                                <p><strong>Number of Examples Needed:</strong></p>
+                                                <ul className="list-disc pl-5 space-y-1">
+                                                    <li><em>One Long Example:</em> Best for topics where traits are combined in a single object (e.g., the qualities of a successful nurse).</li>
+                                                    <li><em>Several Examples:</em> Best for historical trends or broader claims (e.g., changes in parenting over 50 years).</li>
+                                                    <li><em>Large Series of Examples:</em> Best for very general claims (e.g., proving Medicare abuse is widespread).</li>
+                                                </ul>
+                                                <p><strong>Ethical Issues:</strong> Deception occurs when writers deliberately distort examples or choose atypical, extremely negative ones to push a biased agenda (e.g., parents using only starving actors as examples to deter their child).</p>
+                                            </div>
+                                            <Ar title="التوضيح بضرب الأمثلة (Illustration)">
+                                                استخدام الأمثلة يوضح الأفكار المجردة. يختلف عدد الأمثلة حسب الموضوع: <strong>مثال واحد طويل</strong> يكفي لشرح مهنة معينة. <strong>عدة أمثلة</strong> تصلح لشرح تغيرات عبر الزمن. <strong>سلسلة ضخمة من الأمثلة</strong> ضرورية لإثبات ظاهرة عامة.
+                                                <br/>
+                                                <strong>تحذير أخلاقي:</strong> تجنب التضليل بانتقاء أمثلة شاذة أو متطرفة لتخويف القارئ أو إقناعه برأي متحيز.
+                                            </Ar>
+                                        </Section>
+
+                                        <Section title="Definition: Establishing Boundaries" icon={BookOpen} color="rose">
+                                            <div className="space-y-4 text-sm leading-relaxed text-slate-700">
+                                                <p>Defining a term establishes its boundaries, separating it from all others. Abstract terms (democracy) or debated terms (drug pusher) require careful boundaries.</p>
+                                                
+                                                <h4 className="font-bold text-slate-900 mt-2 mb-1">Types of Definitions:</h4>
+                                                <ul className="list-disc pl-5 space-y-2">
+                                                    <li><strong>Synonyms:</strong> Words with nearly the same meaning (e.g., <em>lissome</em> = <em>nimble</em>).</li>
+                                                    <li><strong>Essential Definitions:</strong> Does three things: (1) Names the item, (2) Places it in a broad category, (3) Distinguishes it from others. <br/><span className="text-slate-500 italic">Example: A vacuum cleaner (item) is a household appliance (category) that uses suction (distinguishing feature).</span></li>
+                                                    <li><strong>Extended Definitions:</strong> Paragraphs or pages explaining a complex term, often mixing narration, comparison, and negation.</li>
+                                                </ul>
+
+                                                <h4 className="font-bold text-slate-900 mt-4 mb-1">Pitfalls to Avoid:</h4>
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                                                    <div className="bg-slate-50 p-2 rounded border"><strong>Circular definition:</strong> Defining a term by repeating it ("A psychiatrist practices psychiatry").</div>
+                                                    <div className="bg-slate-50 p-2 rounded border"><strong>Overly broad:</strong> Includes too much ("A skunk is a black animal with white fur").</div>
+                                                    <div className="bg-slate-50 p-2 rounded border"><strong>Overly narrow:</strong> Excludes valid functions ("A blender chops food" - it also mixes/whips).</div>
+                                                    <div className="bg-slate-50 p-2 rounded border"><strong>Omission of category:</strong> Using "is where/when" instead of naming the category ("A bistro is where...").</div>
+                                                </div>
+                                            </div>
+                                            <Ar title="التعريف اللغوي: وضع الحدود">
+                                                التعريف يضع حداً فاصلاً للمصطلح. 
+                                                <br/><strong>أنواعه:</strong> المترادفات (Synonyms)، التعريف الأساسي (Essential)، والتعريف الممتد (Extended).
+                                                <br/><strong>معادلة التعريف الأساسي:</strong> (اسم العنصر) هو (الفئة العامة) التي تتميز بـ (السمة الفريدة). <em>مثال: المكنسة (عنصر) هي جهاز منزلي (فئة) تعمل بالشفط (سمة فريدة).</em>
+                                                <br/><strong>أخطاء شائعة:</strong> التعريف الدائري (تكرار نفس الكلمة)، التعريف الواسع جداً (يجمع أشياء أخرى معه)، التعريف الضيق (يحصر الشيء في وظيفة واحدة)، أو عدم ذكر الفئة (قولك: المقهى هو "عندما" نشرب القهوة).
+                                            </Ar>
+                                        </Section>
+
+                                    </div>
+                                )}
+
+                                {/* TAB 5: WRITING ABOUT LITERATURE */}
+                                {activeTab === 'dr_abdullah_lit' && (
+                                    <div className="space-y-8 animate-in fade-in duration-300">
+                                        
+                                        <div className="bg-white rounded-3xl shadow-sm border border-slate-200 p-6 flex flex-col md:flex-row gap-6 items-center hover:border-purple-200 transition-colors">
+                                            <div className="md:w-1/4 flex justify-center">
+                                                <div className="w-20 h-20 bg-purple-50 rounded-full flex items-center justify-center border-4 border-white shadow-md text-purple-600">
+                                                    <BookOpen size={32} />
+                                                </div>
+                                            </div>
+                                            <div className="md:w-3/4 text-center md:text-left space-y-1">
+                                                <h2 className="text-xl font-black text-slate-900">5. Writing About Creative Works</h2>
+                                                <p className="text-slate-600 text-sm leading-relaxed">
+                                                    Analyzing literature, movies, and TV shows. Understanding plot, setting, POV, themes, and crafting reviews or literary analyses.
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <Section title="Elements of Creative Works (Part 1)" subtitle="Plot, Setting, & Characters" icon={Feather} color="purple">
+                                            <div className="space-y-4 text-sm leading-relaxed text-slate-700">
+                                                <p><strong>1. Plot:</strong> The series of events that moves the narrative along. Plots use techniques like <strong>Foreshadowing</strong> (hints at future events), <strong>Flashback</strong> (interrupts present action for past events), <strong>Cutting</strong> (skips routine parts), and varying <strong>Order</strong>.</p>
+                                                
+                                                <p><strong>2. Setting:</strong> The time, place, and environment. Setting creates mood/atmosphere, reveals character traits (e.g., a luxurious house reveals desire for display), acts as a symbol (a river = fate), and supports the theme.</p>
+                                                
+                                                <p><strong>3. Character:</strong> Individuals who drive the action. Roles include the <strong>Protagonist</strong> (main character, good or bad) and the <strong>Antagonist</strong> (opposed to the protagonist, not necessarily bad). Writers define characters through direct narration, their settings, actions, or dialogue.</p>
+                                            </div>
+                                            <Ar title="عناصر الأعمال الإبداعية (الجزء الأول)">
+                                                <ul className="list-disc pr-5 mt-2 space-y-1">
+                                                    <li><strong>الحبكة (Plot):</strong> تسلسل الأحداث. تستخدم تقنيات كالتلميح المسبق (Foreshadowing)، والاسترجاع (Flashback).</li>
+                                                    <li><strong>الزمان والمكان (Setting):</strong> يخلق الحالة المزاجية، يعكس شخصية البطل، ويعمل كرمز للأحداث.</li>
+                                                    <li><strong>الشخصيات (Character):</strong> المحرك الأساسي. يشمل البطل (Protagonist) والخصم (Antagonist). الخصم ليس بالضرورة شخصاً شريراً، قد يكون محققاً يطارد بطلاً مجرماً.</li>
+                                                </ul>
+                                            </Ar>
+                                        </Section>
+
+                                        <Section title="Elements of Creative Works (Part 2)" subtitle="POV, Symbols, & Themes" icon={Users} color="purple">
+                                            <div className="space-y-4 text-sm leading-relaxed text-slate-700">
+                                                <p><strong>4. Point of View (POV):</strong> The perspective from which a story is told.</p>
+                                                <ul className="list-disc pl-5 space-y-1 text-xs">
+                                                    <li><em>First-Person (I, me):</em> Direct access to narrator's thoughts, but limited/unreliable.</li>
+                                                    <li><em>Third-Person Limited (he, she):</em> Focuses on one character from outside.</li>
+                                                    <li><em>Third-Person Omniscient:</em> All-knowing narrator who sees everyone's thoughts.</li>
+                                                </ul>
+
+                                                <p><strong>5. Symbols:</strong> Objects/names representing deeper meanings. <em>Unique symbols</em> mean something only in that work (the Mockingjay). <em>Conventional symbols</em> are culturally recognized (a cross). Meaning is gained through repeated association.</p>
+
+                                                <p><strong>6. Theme:</strong> The central message or insight about life. Rarely stated directly; usually inferred from characters, plot, and symbols.</p>
+
+                                                <p><strong>7. Other Devices:</strong></p>
+                                                <ul className="list-disc pl-5 space-y-1 text-xs">
+                                                    <li><em>Memes:</em> Ideas or images that repeat across culture and time (e.g., Frankenstein).</li>
+                                                    <li><em>Ambiguity:</em> Unresolved endings reflecting life's uncertainty.</li>
+                                                    <li><em>Juxtaposition:</em> Placing contrasting scenes side-by-side to highlight differences.</li>
+                                                    <li><em>Irony:</em> Difference between expectation and outcome (Situational irony).</li>
+                                                </ul>
+                                            </div>
+                                            <Ar title="عناصر الأعمال الإبداعية (الجزء الثاني)">
+                                                <ul className="list-disc pr-5 mt-2 space-y-1">
+                                                    <li><strong>وجهة النظر (POV):</strong> منظور سرد القصة. إما بضمير المتكلم (يخلق حميمية لكنه غير موثوق)، أو الغائب المحدود، أو الراوي العليم بكل شيء (Omniscient).</li>
+                                                    <li><strong>الرموز (Symbols):</strong> قد تكون فريدة وخاصة بالقصة فقط، أو رموز متعارف عليها ثقافياً.</li>
+                                                    <li><strong>الموضوع أو الرسالة (Theme):</strong> الفكرة المركزية العميقة للعمل وتُستنتج من الأحداث.</li>
+                                                    <li><strong>أدوات أخرى:</strong> الميمز (أفكار تتناقلها الثقافات كدراكولا)، الغموض (نهايات مفتوحة واقعية)، التجاور (وضع مشهدين متناقضين بجوار بعضهما)، والمفارقة (حدوث عكس المتوقع).</li>
+                                                </ul>
+                                            </Ar>
+                                        </Section>
+
+                                        <Section title="Types of Literary Writing" subtitle="Review, Explication, and Analysis" icon={FileText} color="purple">
+                                            <div className="space-y-4 text-sm leading-relaxed text-slate-700">
+                                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                                    <div className="bg-slate-50 p-4 rounded-xl border">
+                                                        <h4 className="font-bold text-slate-900 mb-1">1. Review</h4>
+                                                        <p className="text-xs text-slate-600">Evaluates the work to help readers decide whether to engage with it. Includes a non-spoiler plot summary, balanced strengths/weaknesses, and a final recommendation.</p>
+                                                    </div>
+                                                    <div className="bg-slate-50 p-4 rounded-xl border">
+                                                        <h4 className="font-bold text-slate-900 mb-1">2. Explication</h4>
+                                                        <p className="text-xs text-slate-600">Explains and clarifies a difficult text (often poetry) step-by-step. Breaks down complex images and language to simply show <em>what the text means</em> line by line.</p>
+                                                    </div>
+                                                    <div className="bg-slate-50 p-4 rounded-xl border">
+                                                        <h4 className="font-bold text-slate-900 mb-1">3. Literary Analysis</h4>
+                                                        <p className="text-xs text-slate-600">Makes a clear argument or interpretation about the deeper meaning. Argues <em>what the text reveals</em> using symbols, themes, or outside critical sources.</p>
+                                                    </div>
+                                                </div>
+                                                <p className="mt-4 text-xs font-bold text-slate-800">Ethical Issues:</p>
+                                                <p className="text-xs text-slate-600">When writing, you must read the entire work, avoid quoting out of context, and prevent distorting events just to promote a personal agenda.</p>
+                                            </div>
+                                            <Ar title="أنواع الكتابة عن الأعمال الأدبية">
+                                                <ul className="list-disc pr-5 mt-2 space-y-1">
+                                                    <li><strong>المراجعة (Review):</strong> تقييم العمل لترشيحه للجمهور بذكر ملخص بلا حرق، ومميزات وعيوب.</li>
+                                                    <li><strong>التفسير (Explication):</strong> شرح النصوص المعقدة (كالشعر) سطراً بسطر لتوضيح معناها المباشر.</li>
+                                                    <li><strong>التحليل الأدبي (Analysis):</strong> بناء حجة أو تفسير لرسالة العمل العميقة باستخدام رموزه وشخصياته. (يجب قراءة العمل كاملاً وعدم اجتزاء النصوص لأغراض غير أخلاقية).</li>
+                                                </ul>
+                                            </Ar>
+                                        </Section>
+
+                                    </div>
+                                )}
+
+                                {/* TAB 6: EXERCISES HUB */}
+                                {activeTab === 'dr_abdullah_exercises' && (
+                                    <div className="space-y-8 animate-in fade-in duration-300">
+                                        
+                                        <div className="bg-white rounded-3xl shadow-sm border border-slate-200 p-6 flex flex-col md:flex-row gap-6 items-center hover:border-emerald-200 transition-colors">
+                                            <div className="md:w-1/4 flex justify-center">
+                                                <div className="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center border-4 border-white shadow-md text-emerald-600">
+                                                    <PenTool size={32} />
+                                                </div>
+                                            </div>
+                                            <div className="md:w-3/4 text-center md:text-left space-y-1">
+                                                <h2 className="text-xl font-black text-slate-900">6. Practice Exercises Hub</h2>
+                                                <p className="text-slate-600 text-sm leading-relaxed">
+                                                    All paragraph unity, topic sentence, and development exercises provided in Dr. Abdullah's section.
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-6">
+                                            
+                                            <div>
+                                                <h3 className="font-bold text-slate-800 text-lg mb-3 flex items-center gap-2">
+                                                    <span className="bg-amber-100 text-amber-800 px-2 py-0.5 rounded text-xs">Section 1</span> Paragraph Unity
+                                                </h3>
+                                                <div className="space-y-3">
+                                                    <ExerciseCard 
+                                                        question="Read the 'Elephant graveyard' paragraph and the 'CD Sales' paragraph. Which lacks unity?"
+                                                        answer="The 'CD Sales' paragraph lacks unity. While the Elephant paragraph sticks perfectly to the cruel myth of the graveyard, the CD paragraph jumps from online downloading convenience, to retail bankruptcies (Tower Records), to alternative indie bands getting distribution, and finally to Wal-Mart's impact. It has far too many stray ideas."
+                                                        themeColor="amber"
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <div>
+                                                <h3 className="font-bold text-slate-800 text-lg mb-3 flex items-center gap-2 mt-8">
+                                                    <span className="bg-teal-100 text-teal-800 px-2 py-0.5 rounded text-xs">Section 2</span> Finding Topic Sentences
+                                                </h3>
+                                                <div className="space-y-3">
+                                                    <ExerciseCard 
+                                                        question="Find the topic sentence: Last winter, while leafing through the Guinness Book... I planted a half acre of sunflower seeds. That half acre is now a magnificent 22,000 square feet... I plan to have an automatic watering system to feed my babies."
+                                                        answer="Implied Topic Sentence: There is no explicit topic sentence. The paragraph collectively describes the writer's attempt to grow sunflowers, inspired by a world record, and how they feel about the process."
+                                                        themeColor="teal"
+                                                    />
+                                                    <ExerciseCard 
+                                                        question="Find the topic sentence: At the most fundamental level, scientific explanation of the world is akin to the process of reading and writing. Whether studying skull structures or geological layers, scientists were deciphering sign systems..."
+                                                        answer="Topic Sentence is Stated First: 'At the most fundamental level, scientific explanation of the world is akin to the process of reading and writing.'"
+                                                        themeColor="teal"
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <div>
+                                                <h3 className="font-bold text-slate-800 text-lg mb-3 flex items-center gap-2 mt-8">
+                                                    <span className="bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded text-xs">Section 3</span> Paragraph Development
+                                                </h3>
+                                                <div className="space-y-3">
+                                                    <ExerciseCard 
+                                                        question="Expand this underdeveloped unit: 'I like living in a small town because the people are so friendly. In addition, I can always get the latest gossip from the local busybody.'"
+                                                        answer="Expanded: Living in a small town has its unique charm, and one of the best aspects is how friendly the people are. In a small town, you always feel like you're part of a close-knit community... People take the time to greet you, and neighbors stop by to check in. Moreover, the town is full of interesting characters, such as the local busybody, who always seems to know the latest news. Whether it's a new job, a wedding, or neighborhood happenings, you can count on the busybody to keep you in the loop..."
+                                                        themeColor="indigo"
+                                                    />
+                                                    <ExerciseCard 
+                                                        question="Expand this underdeveloped unit: 'In a big city, people are afraid to get too friendly. Everything is very private, and nobody knows anything about anybody else.'"
+                                                        answer="Expanded: In a big city, people are afraid to get too friendly. It feels like everyone is in their own world, rushing from one place to another. I hardly ever see anyone without their headphones in, avoiding eye contact. The streets are filled with people, yet there's a strange sense of isolation. Even on the packed subway, it's rare to strike up a conversation. The anonymity of city life means personal space is valued above all, and you can live next to someone for years without ever getting to know them..."
+                                                        themeColor="indigo"
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <div>
+                                                <h3 className="font-bold text-slate-800 text-lg mb-3 flex items-center gap-2 mt-8">
+                                                    <span className="bg-rose-100 text-rose-800 px-2 py-0.5 rounded text-xs">Section 4</span> Organization Strategy
+                                                </h3>
+                                                <div className="space-y-3">
+                                                    <ExerciseCard 
+                                                        question="What is the writing strategy used here? 'I woke up late that morning and rushed through my routine. I skipped breakfast, grabbed my bag, and ran to the bus stop just as the bus was leaving. At school, I realized I had forgotten my homework... By lunchtime, things got worse...'"
+                                                        answer="Strategy: Time Sequence (Narration). It tells a story step by step using a clear chronological timeline: woke up -> ran to bus -> at school -> by lunchtime."
+                                                        themeColor="rose"
+                                                    />
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                )}
+                            </>
+                        )}
+
+                    </main>
+                </div>
+            );
+        };
+
+        const root = createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
